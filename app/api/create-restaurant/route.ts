@@ -1,6 +1,5 @@
-"use server"
-
 import https from "https"
+import { NextRequest, NextResponse } from "next/server"
 
 const RESERVED_SLUGS = new Set([
   "dashboard", "login", "register", "api", "admin", "demo",
@@ -21,13 +20,7 @@ function httpsReq(
     if (body) reqHeaders["Content-Length"] = Buffer.byteLength(body)
 
     const req = https.request(
-      {
-        hostname: parsed.hostname,
-        path: parsed.pathname + parsed.search,
-        method,
-        family: 4,
-        headers: reqHeaders,
-      },
+      { hostname: parsed.hostname, path: parsed.pathname + parsed.search, method, family: 4, headers: reqHeaders },
       (res) => {
         let data = ""
         res.on("data", (chunk) => (data += chunk))
@@ -46,15 +39,20 @@ async function deleteAuthUser(userId: string) {
   await httpsReq("DELETE", `${url}/auth/v1/admin/users/${userId}`, null, {
     apikey: key,
     Authorization: `Bearer ${key}`,
-  }).catch(() => {/* best-effort */})
+  }).catch(() => {})
 }
 
-export async function createRestaurant(userId: string, name: string, slug: string) {
+export async function POST(req: NextRequest) {
   try {
-    // Bloquear slugs reservados
+    const { userId, name, slug } = await req.json()
+
+    if (!userId || !name || !slug) {
+      return NextResponse.json({ error: "Dados inválidos." }, { status: 400 })
+    }
+
     if (RESERVED_SLUGS.has(slug.toLowerCase())) {
       await deleteAuthUser(userId)
-      return { error: "slug_reserved" }
+      return NextResponse.json({ error: "slug_reserved" })
     }
 
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -73,21 +71,20 @@ export async function createRestaurant(userId: string, name: string, slug: strin
       headers
     )
 
-    if (status === 201 || status === 200) return { error: null }
+    if (status === 201 || status === 200) {
+      return NextResponse.json({ error: null })
+    }
 
-    // Falhou — eliminar a conta criada (rollback)
     await deleteAuthUser(userId)
 
     let parsed: { code?: string; message?: string } = {}
     try { parsed = JSON.parse(body) } catch { /* ignore */ }
 
-    if (parsed?.code === "23505") return { error: "slug_taken" }
-    return { error: parsed?.message ?? `Erro ao criar restaurante (HTTP ${status})` }
+    if (parsed?.code === "23505") return NextResponse.json({ error: "slug_taken" })
+    return NextResponse.json({ error: parsed?.message ?? `Erro ao criar restaurante (HTTP ${status})` })
 
   } catch (err) {
-    console.error("createRestaurant exception:", err)
-    // Tentar rollback mesmo em exceção
-    try { await deleteAuthUser(userId) } catch { /* ignore */ }
-    return { error: "Erro de ligação. Tenta novamente." }
+    console.error("create-restaurant exception:", err)
+    return NextResponse.json({ error: "Erro de ligação. Tenta novamente." }, { status: 500 })
   }
 }

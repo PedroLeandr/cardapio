@@ -8,7 +8,6 @@ import { z } from "zod"
 import { UtensilsCrossed, Eye, EyeOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
-import { createRestaurant } from "./actions"
 import { generateSlug } from "@/lib/utils"
 import toast from "react-hot-toast"
 
@@ -70,8 +69,12 @@ export default function RegisterPage() {
       return
     }
 
-    // Usar Server Action para criar o restaurante com a sessão do servidor
-    const result = await createRestaurant(authData.user.id, data.restaurantName, data.slug)
+    const res = await fetch("/api/create-restaurant", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: authData.user.id, name: data.restaurantName, slug: data.slug }),
+    })
+    const result = await res.json()
 
     if (!result || result.error) {
       const msg =

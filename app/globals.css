@@ -1,27 +1,125 @@
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
   }
-}
-
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
+}
+
+@layer base {
+  :root {
+    /* Cores do projeto */
+    --background: #FAF8F4;
+    --surface: #FFFFFF;
+    --surface-muted: #F2EFE9;
+
+    --text-primary: #1A1510;
+    --text-secondary: #6B5E4E;
+    --text-muted: #A89880;
+
+    --brand-accent: #C8622A;
+    --brand-accent-hover: #A84E1E;
+    --brand-accent-light: #F5E6DC;
+
+    --sold-out-bg: #F5F0EB;
+    --sold-out-text: #A89880;
+
+    --sidebar-bg: #1A1510;
+    --sidebar-text: #E8DDD0;
+    --sidebar-hover: #2E2318;
+
+    /* shadcn/ui overrides */
+    --foreground: #1A1510;
+    --card: #FFFFFF;
+    --card-foreground: #1A1510;
+    --popover: #FFFFFF;
+    --popover-foreground: #1A1510;
+    --primary: #C8622A;
+    --primary-foreground: #FFFFFF;
+    --secondary: #F2EFE9;
+    --secondary-foreground: #1A1510;
+    --muted: #F2EFE9;
+    --muted-foreground: #A89880;
+    --accent: #F2EFE9;
+    --accent-foreground: #1A1510;
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: #E8E0D5;
+    --input: #E8E0D5;
+    --ring: #C8622A;
+    --radius: 0.75rem;
+    --sidebar: #1A1510;
+    --sidebar-foreground: #E8DDD0;
+    --sidebar-primary: #C8622A;
+    --sidebar-primary-foreground: #FFFFFF;
+    --sidebar-accent: #2E2318;
+    --sidebar-accent-foreground: #E8DDD0;
+    --sidebar-border: #2E2318;
+    --sidebar-ring: #C8622A;
+  }
+
+  * {
+    @apply border-border;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  ::selection {
+    background-color: #F5E6DC;
+    color: #1A1510;
+  }
+  input, textarea, select {
+    @apply outline-none;
+  }
+  input:focus-visible, textarea:focus-visible {
+    @apply ring-2 ring-[#C8622A]/30 border-[#C8622A];
+  }
+  button {
+    cursor: pointer;
+  }
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.item-card-animate {
+  animation: fadeSlideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: calc(var(--index, 0) * 50ms);
+  opacity: 0;
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease forwards;
 }

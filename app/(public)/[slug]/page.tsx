@@ -2,8 +2,7 @@ import { notFound } from "next/navigation"
 import type { Metadata } from "next"
 import { createClient } from "@/lib/supabase/server"
 import { MenuHeader } from "@/components/menu/MenuHeader"
-import { CategoryNav } from "@/components/menu/CategoryNav"
-import { CategorySection } from "@/components/menu/CategorySection"
+import { MenuClient } from "@/components/menu/MenuClient"
 import { getMockMenuData } from "@/lib/mock-data"
 import type { MenuData } from "@/lib/mock-data"
 
@@ -12,7 +11,6 @@ interface Props {
 }
 
 async function getMenuData(slug: string): Promise<MenuData | null> {
-  // Dados de demo para desenvolvimento
   if (slug === "demo") return getMockMenuData()
 
   const supabase = await createClient()
@@ -55,6 +53,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${data.restaurant.name} — Cardápio Digital`,
     description: data.restaurant.description ?? undefined,
+    icons: data.restaurant.logo_url ? { icon: data.restaurant.logo_url } : undefined,
     openGraph: {
       title: `${data.restaurant.name} — Cardápio Digital`,
       description: data.restaurant.description ?? undefined,
@@ -71,32 +70,31 @@ export default async function MenuPage({ params }: Props) {
   const { restaurant, categories } = data
   const activeCategoriesWithItems = categories.filter((cat) => cat.items.length > 0)
 
+  const bgUrl =
+    restaurant.cover_url ??
+    "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200&q=80"
+
   return (
-    <div className="min-h-screen bg-[#FAF8F4]">
+    <div className="min-h-screen flex flex-col">
+      <div
+        className="fixed top-0 inset-x-0 -z-10 bg-cover bg-center"
+        style={{ backgroundImage: `url('${bgUrl}')`, height: "100lvh" }}
+      />
+      <div
+        className="fixed top-0 inset-x-0 -z-10 bg-black/65"
+        style={{ height: "100lvh" }}
+      />
+
       <MenuHeader restaurant={restaurant} />
+      <div className="flex-1">
+        <MenuClient categories={activeCategoriesWithItems} slug={params.slug} />
+      </div>
 
-      {activeCategoriesWithItems.length > 0 && (
-        <CategoryNav categories={activeCategoriesWithItems} />
-      )}
-
-      <main className="max-w-3xl mx-auto px-6 py-8 space-y-14">
-        {activeCategoriesWithItems.length === 0 ? (
-          <div className="py-20 text-center">
-            <p className="font-playfair text-xl text-[#A89880]">Cardápio em preparação...</p>
-            <p className="font-lato text-sm text-[#A89880] mt-2">Volta em breve para ver os nossos pratos.</p>
-          </div>
-        ) : (
-          activeCategoriesWithItems.map((cat) => (
-            <CategorySection key={cat.id} category={cat} slug={params.slug} />
-          ))
-        )}
-      </main>
-
-      <footer className="mt-16 py-8 border-t border-[#E8E0D5]">
-        <div className="max-w-3xl mx-auto px-6 text-center">
-          <p className="font-lato text-xs text-[#A89880]">
+      <footer className="py-6 border-t border-white/10 md:py-8">
+        <div className="max-w-3xl mx-auto px-4 text-center md:px-6">
+          <p className="font-lato text-xs text-white/40">
             Powered by{" "}
-            <a href="/" className="text-[#C8622A] hover:text-[#A84E1E] transition-colors">
+            <a href="/" className="text-[#C8622A] hover:text-[#E07840] transition-colors">
               Cardápios Digitais
             </a>
           </p>

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react"
 import Image from "next/image"
-import { UtensilsCrossed, Upload, X, ExternalLink } from "lucide-react"
+import { UtensilsCrossed, Upload, X, ExternalLink, Phone, MapPin } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -32,6 +32,8 @@ const settingsSchema = z.object({
     .regex(/^[a-z0-9-]+$/, "Apenas letras minúsculas, números e hífens")
     .refine((v) => !RESERVED_SLUGS.has(v.toLowerCase()), "Este URL é reservado. Escolhe outro."),
   description: z.string().max(300, "Máximo 300 caracteres").optional(),
+  phone: z.string().max(30, "Número demasiado longo").optional(),
+  google_maps_url: z.string().max(500, "URL demasiado longo").optional(),
 })
 
 type SettingsValues = z.infer<typeof settingsSchema>
@@ -87,6 +89,8 @@ export default function SettingsPage() {
       setValue("name", restaurant.name)
       setValue("slug", restaurant.slug)
       setValue("description", restaurant.description ?? "")
+      setValue("phone", restaurant.phone ?? "")
+      setValue("google_maps_url", restaurant.google_maps_url ?? "")
       setLoading(false)
     }
     load()
@@ -163,6 +167,8 @@ export default function SettingsPage() {
           slug: data.slug,
           description: data.description ?? "",
           logo_url: finalLogoUrl,
+          phone: data.phone || null,
+          google_maps_url: data.google_maps_url || null,
         })
         .eq("id", restaurantId)
 
@@ -296,7 +302,52 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Secção 2 — URL */}
+        {/* Secção 2 — Contacto */}
+        <div className="bg-white rounded-xl border border-[#E8E0D5] p-6 space-y-5">
+          <h2 className="font-dm-sans font-semibold text-sm text-[#A89880] uppercase tracking-wide">
+            Contacto
+          </h2>
+
+          {/* Telefone */}
+          <div>
+            <label className="block text-sm font-dm-sans font-medium text-[#1A1510] mb-1.5">
+              Número de Telefone
+            </label>
+            <div className="relative">
+              <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A89880] pointer-events-none" />
+              <input
+                {...register("phone")}
+                type="tel"
+                placeholder="+351 912 345 678"
+                className="w-full pl-10 pr-3.5 py-2.5 bg-[#FAF8F4] border border-[#E8E0D5] rounded-xl text-sm font-dm-sans text-[#1A1510] placeholder-[#A89880] focus:outline-none focus:ring-2 focus:ring-[#C8622A]/30 focus:border-[#C8622A] transition"
+              />
+            </div>
+            {errors.phone && <p className="mt-1 text-xs text-red-600 font-dm-sans">{errors.phone.message}</p>}
+            <p className="mt-1 text-xs text-[#A89880] font-dm-sans">Aparece no cardápio para os clientes ligarem diretamente.</p>
+          </div>
+
+          {/* Google Maps */}
+          <div>
+            <label className="block text-sm font-dm-sans font-medium text-[#1A1510] mb-1.5">
+              Link do Google Maps
+            </label>
+            <div className="relative">
+              <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A89880] pointer-events-none" />
+              <input
+                {...register("google_maps_url")}
+                type="url"
+                placeholder="https://maps.app.goo.gl/..."
+                className="w-full pl-10 pr-3.5 py-2.5 bg-[#FAF8F4] border border-[#E8E0D5] rounded-xl text-sm font-dm-sans text-[#1A1510] placeholder-[#A89880] focus:outline-none focus:ring-2 focus:ring-[#C8622A]/30 focus:border-[#C8622A] transition"
+              />
+            </div>
+            {errors.google_maps_url && <p className="mt-1 text-xs text-red-600 font-dm-sans">{errors.google_maps_url.message}</p>}
+            <p className="mt-1 text-xs text-[#A89880] font-dm-sans">
+              No Google Maps: abre a localização → toca em <strong className="text-[#6B5E4E]">Partilhar</strong> → <strong className="text-[#6B5E4E]">Copiar link</strong>. O link terá o formato <span className="font-mono">maps.app.goo.gl/...</span>
+            </p>
+          </div>
+        </div>
+
+        {/* Secção 3 — URL */}
         <div className="bg-white rounded-xl border border-[#E8E0D5] p-6 space-y-4">
           <h2 className="font-dm-sans font-semibold text-sm text-[#A89880] uppercase tracking-wide">
             URL do Cardápio

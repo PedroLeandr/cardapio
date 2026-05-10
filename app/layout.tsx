@@ -32,6 +32,7 @@ export const metadata: Metadata = {
   title: "Cardápios Digitais — Menu QR para Restaurantes",
   description:
     "Cria o teu cardápio digital em minutos. Partilha por link ou QR code. Sem custos, sem complicações.",
+  icons: { icon: [{ url: "/icon.svg", type: "image/svg+xml" }] },
 }
 
 export default function RootLayout({

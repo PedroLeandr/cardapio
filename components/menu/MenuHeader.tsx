@@ -1,7 +1,4 @@
-"use client"
-
-import { useEffect, useState } from "react"
-import { UtensilsCrossed } from "lucide-react"
+import { UtensilsCrossed, Phone, MapPin } from "lucide-react"
 import type { Restaurant } from "@/lib/mock-data"
 import Image from "next/image"
 
@@ -10,22 +7,16 @@ interface MenuHeaderProps {
 }
 
 export function MenuHeader({ restaurant }: MenuHeaderProps) {
-  const [scrolled, setScrolled] = useState(false)
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 10)
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+  const iconClass =
+    "w-9 h-9 rounded-full bg-white/10 border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all duration-200 hover:scale-105 active:scale-95"
 
   return (
-    <header className={`sticky top-0 z-40 transition-all duration-300 ${scrolled ? "bg-[#FAF8F4]/95 backdrop-blur-md shadow-[0_1px_0_0_#E8E0D5]" : "bg-[#FAF8F4]"}`}>
-      <div className="max-w-3xl mx-auto px-6 py-5">
+    <header className="fixed top-0 inset-x-0 z-40 bg-black/80">
+      <div className="max-w-3xl mx-auto px-4 py-4 md:px-6 md:py-5">
         <div className="flex items-center gap-4">
-          {/* Logo */}
           <div className="flex-shrink-0">
             {restaurant.logo_url ? (
-              <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-[#E8E0D5] shadow-sm">
+              <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-white/20 shadow-[0_0_20px_rgba(0,0,0,0.5)]">
                 <Image
                   src={restaurant.logo_url}
                   alt={restaurant.name}
@@ -35,21 +26,39 @@ export function MenuHeader({ restaurant }: MenuHeaderProps) {
                 />
               </div>
             ) : (
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#F5E6DC] to-[#EDE0D3] border-2 border-[#E8D5C8] flex items-center justify-center">
+              <div className="w-14 h-14 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center shadow-[0_0_20px_rgba(0,0,0,0.4)]">
                 <UtensilsCrossed className="w-6 h-6 text-[#C8622A]" />
               </div>
             )}
           </div>
 
-          {/* Texto */}
           <div className="flex-1 min-w-0">
-            <h1 className="font-playfair text-xl md:text-2xl font-bold text-[#1A1510] leading-tight truncate">
+            <h1 className="font-playfair text-xl md:text-2xl font-bold text-white leading-tight truncate drop-shadow-[0_1px_4px_rgba(0,0,0,0.7)]">
               {restaurant.name}
             </h1>
             {restaurant.description && (
-              <p className="font-lato text-sm text-[#7A6A5A] mt-0.5 line-clamp-1 leading-relaxed">
+              <p className="font-lato text-sm text-white/65 mt-0.5 line-clamp-1 leading-relaxed">
                 {restaurant.description}
               </p>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {restaurant.phone && (
+              <a href={`tel:${restaurant.phone}`} aria-label="Ligar" className={iconClass}>
+                <Phone className="w-4 h-4 text-white" />
+              </a>
+            )}
+            {restaurant.google_maps_url && (
+              <a
+                href={restaurant.google_maps_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Ver localização"
+                className={iconClass}
+              >
+                <MapPin className="w-4 h-4 text-white" />
+              </a>
             )}
           </div>
         </div>

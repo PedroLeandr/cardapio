@@ -5,6 +5,9 @@ export interface Restaurant {
   slug: string
   description: string
   logo_url: string | null
+  cover_url: string | null
+  phone: string | null
+  google_maps_url: string | null
   created_at: string
 }
 
@@ -35,6 +38,9 @@ export const mockRestaurant: Restaurant = {
   slug: "demo",
   description: "Cozinha portuguesa tradicional, feita com amor e ingredientes da nossa terra.",
   logo_url: null,
+  cover_url: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200&q=80",
+  phone: "+351 912 345 678",
+  google_maps_url: "https://maps.app.goo.gl/9WGzbhj6Cr35XNPV8",
   created_at: "2026-01-01T00:00:00Z",
 }
 

@@ -5,7 +5,10 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet"
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from "@/components/ui/dialog"
+import { FolderOpen } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import toast from "react-hot-toast"
 import type { Category } from "@/lib/mock-data"
@@ -77,42 +80,61 @@ export function CategoryForm({ open, onOpenChange, category, restaurantId, onSuc
   }
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-md bg-white">
-        <SheetHeader className="mb-6">
-          <SheetTitle className="font-dm-sans text-[#1A1510]">
-            {isEditing ? "Editar Categoria" : "Nova Categoria"}
-          </SheetTitle>
-          <SheetDescription className="font-dm-sans text-[#6B5E4E]">
-            {isEditing ? "Altera o nome da categoria." : "Adiciona uma nova secção ao teu cardápio."}
-          </SheetDescription>
-        </SheetHeader>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-sm bg-[#FAF8F4] border border-[#E8E0D5] shadow-xl shadow-[#1A1510]/8 p-0 overflow-hidden">
+        {/* Header com faixa laranja */}
+        <div className="bg-[#C8622A] px-6 py-5">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
+              <FolderOpen className="w-4.5 h-4.5 text-white" />
+            </div>
+            <div>
+              <DialogTitle className="font-dm-sans font-bold text-white text-base leading-tight">
+                {isEditing ? "Editar Categoria" : "Nova Categoria"}
+              </DialogTitle>
+              <DialogDescription className="font-dm-sans text-white/70 text-xs mt-0.5">
+                {isEditing ? "Altera o nome da categoria." : "Adiciona uma nova secção ao teu cardápio."}
+              </DialogDescription>
+            </div>
+          </div>
+        </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        {/* Corpo do formulário */}
+        <form onSubmit={handleSubmit(onSubmit)} className="px-6 py-5 space-y-5">
           <div>
-            <label className="block text-sm font-dm-sans font-medium text-[#1A1510] mb-1.5">
+            <label className="block text-xs font-dm-sans font-semibold text-[#6B5E4E] uppercase tracking-wider mb-2">
               Nome da Categoria
             </label>
             <input
               {...register("name")}
+              autoFocus
               placeholder="Ex: Entradas, Pratos Principais..."
-              className="w-full px-3 py-2.5 bg-[#FAF8F4] border border-[#E8E0D5] rounded-lg text-sm font-dm-sans text-[#1A1510] placeholder-[#A89880] focus:outline-none focus:ring-2 focus:ring-[#C8622A]/30 focus:border-[#C8622A] transition"
+              className="w-full px-3.5 py-2.5 bg-white border border-[#E8E0D5] rounded-xl text-sm font-dm-sans text-[#1A1510] placeholder-[#C4B8A8] focus:outline-none focus:ring-2 focus:ring-[#C8622A]/25 focus:border-[#C8622A] transition shadow-sm"
             />
             {errors.name && (
-              <p className="mt-1 text-xs text-red-600 font-dm-sans">{errors.name.message}</p>
+              <p className="mt-1.5 text-xs text-red-600 font-dm-sans">{errors.name.message}</p>
             )}
           </div>
 
-          <div className="flex gap-3 pt-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1 border-[#E8E0D5] text-[#6B5E4E] hover:bg-[#F2EFE9] font-dm-sans">
+          <div className="flex gap-2.5">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              className="flex-1 border-[#E8E0D5] text-[#6B5E4E] hover:bg-[#F2EFE9] font-dm-sans"
+            >
               Cancelar
             </Button>
-            <Button type="submit" disabled={isSubmitting} className="flex-1 bg-[#C8622A] hover:bg-[#A84E1E] text-white font-dm-sans">
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 bg-[#C8622A] hover:bg-[#A84E1E] text-white font-dm-sans font-medium shadow-sm shadow-[#C8622A]/20"
+            >
               {isSubmitting ? "A guardar..." : isEditing ? "Atualizar" : "Criar"}
             </Button>
           </div>
         </form>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   )
 }

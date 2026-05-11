@@ -1,4 +1,5 @@
 import { Cormorant_Garamond, Outfit } from "next/font/google"
+import { PageLoader } from "@/components/dashboard/PageLoader"
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -17,6 +18,7 @@ const outfit = Outfit({
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className={`${cormorant.variable} ${outfit.variable}`}>
+      <PageLoader />
       {children}
     </div>
   )

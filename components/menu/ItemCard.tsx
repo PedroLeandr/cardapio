@@ -26,7 +26,7 @@ export function ItemCard({ item, index }: ItemCardProps) {
             style={{ left: "-100vw" }}
           />
         )}
-        <div className="relative z-10 w-full h-full rounded-full overflow-hidden bg-[#2a2a2a] ring-2 ring-white/20">
+        <div className="relative z-10 w-full h-full rounded-full overflow-hidden bg-[#2a2a2a] ring-2 ring-white">
           {item.image_url ? (
             <div className={`w-full h-full ${isSoldOut ? "opacity-40 grayscale" : ""}`}>
               <Image

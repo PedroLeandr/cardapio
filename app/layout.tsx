@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { Playfair_Display, Lato, DM_Sans, JetBrains_Mono, Cormorant_Garamond, Outfit } from "next/font/google"
+import { Playfair_Display, Lato, DM_Sans, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
 import { Toaster } from "react-hot-toast"
 

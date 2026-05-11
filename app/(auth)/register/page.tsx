@@ -85,8 +85,13 @@ export default function RegisterPage() {
       return
     }
 
-    toast.success("Conta criada com sucesso!")
-    window.location.href = "/dashboard"
+    const confirmRes = await fetch("/api/send-confirmation", { method: "POST" })
+    if (!confirmRes.ok) {
+      toast.error("Conta criada, mas erro ao enviar email de confirmação.")
+    }
+
+    toast.success("Conta criada! Verifica o teu email.")
+    window.location.href = "/confirmation"
   }
 
   return (

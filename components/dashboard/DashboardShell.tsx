@@ -15,6 +15,7 @@ import {
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
 import toast from "react-hot-toast"
+import { PageLoader } from "./PageLoader"
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -94,6 +95,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
   return (
     <div className="flex h-screen bg-[#F5F2EE] overflow-hidden">
+      <PageLoader />
       {/* Sidebar Desktop */}
       <aside className="hidden md:flex flex-col w-56 bg-[#1A1510] flex-shrink-0">
         <SidebarContent />

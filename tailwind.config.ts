@@ -58,6 +58,8 @@ const config: Config = {
         lato: ["var(--font-lato)", "system-ui", "sans-serif"],
         "dm-sans": ["var(--font-dm-sans)", "system-ui", "sans-serif"],
         mono: ["var(--font-jetbrains)", "monospace"],
+        cormorant: ["var(--font-cormorant)", "Georgia", "serif"],
+        outfit: ["var(--font-outfit)", "system-ui", "sans-serif"],
       },
     },
   },

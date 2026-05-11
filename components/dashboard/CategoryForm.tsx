@@ -88,14 +88,14 @@ export function CategoryForm({ open, onOpenChange, category, restaurantId, onSuc
             <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
               <FolderOpen className="w-4.5 h-4.5 text-white" />
             </div>
-            <div>
+            <DialogHeader className="gap-0.5">
               <DialogTitle className="font-dm-sans font-bold text-white text-base leading-tight">
                 {isEditing ? "Editar Categoria" : "Nova Categoria"}
               </DialogTitle>
-              <DialogDescription className="font-dm-sans text-white/70 text-xs mt-0.5">
+              <DialogDescription className="font-dm-sans text-white/70 text-xs">
                 {isEditing ? "Altera o nome da categoria." : "Adiciona uma nova secção ao teu cardápio."}
               </DialogDescription>
-            </div>
+            </DialogHeader>
           </div>
         </div>
 

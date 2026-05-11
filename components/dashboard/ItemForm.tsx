@@ -7,7 +7,7 @@ import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select"
 import { ImagePlus, UtensilsCrossed, X } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import toast from "react-hot-toast"
@@ -145,14 +145,14 @@ export function ItemForm({ open, onOpenChange, item, categories, restaurantId, o
             <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
               <UtensilsCrossed className="w-4.5 h-4.5 text-white" />
             </div>
-            <div>
+            <DialogHeader className="gap-0.5">
               <DialogTitle className="font-dm-sans font-bold text-white text-base leading-tight">
                 {isEditing ? "Editar Item" : "Novo Item"}
               </DialogTitle>
-              <DialogDescription className="font-dm-sans text-white/70 text-xs mt-0.5">
+              <DialogDescription className="font-dm-sans text-white/70 text-xs">
                 {isEditing ? "Altera os detalhes do prato." : "Adiciona um novo prato ao cardápio."}
               </DialogDescription>
-            </div>
+            </DialogHeader>
           </div>
         </div>
 
@@ -222,7 +222,7 @@ export function ItemForm({ open, onOpenChange, item, categories, restaurantId, o
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id} textValue={cat.name} className="font-dm-sans">{cat.name}</SelectItem>
+                    <SelectItem key={cat.id} value={cat.id} className="font-dm-sans">{cat.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

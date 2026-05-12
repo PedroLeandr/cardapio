@@ -28,18 +28,23 @@ export function ItemCard({ item, index }: ItemCardProps) {
         )}
         <div className="relative z-10 w-full h-full rounded-full overflow-hidden bg-[#2a2a2a] ring-2 ring-white">
           {item.image_url ? (
-            <div className={`w-full h-full ${isSoldOut ? "opacity-40 grayscale" : ""}`}>
-              <Image
-                src={item.image_url}
-                alt={item.name}
-                width={128}
-                height={128}
-                className="w-full h-full object-cover"
-              />
-            </div>
+            <Image
+              src={item.image_url}
+              alt={item.name}
+              width={128}
+              height={128}
+              className="w-full h-full object-cover"
+            />
           ) : (
-            <div className={`w-full h-full flex items-center justify-center ${isSoldOut ? "opacity-40 grayscale" : ""}`}>
+            <div className="w-full h-full flex items-center justify-center">
               <UtensilsCrossed className="w-8 h-8 text-white/20 md:w-9 md:h-9" />
+            </div>
+          )}
+          {isSoldOut && (
+            <div className="absolute inset-0 bg-black/55 flex items-center justify-center">
+              <span className="text-white text-[10px] font-outfit font-bold uppercase tracking-[0.15em] text-center leading-tight px-2">
+                Esgotado
+              </span>
             </div>
           )}
         </div>
@@ -65,15 +70,10 @@ export function ItemCard({ item, index }: ItemCardProps) {
           }}
         />
         <div className={`relative z-10 h-full flex flex-col justify-center gap-0 ${reversed ? "pr-5 pl-4" : "pl-5 pr-4"}`}>
-          <div className="flex items-center gap-2">
-            <h3 className={`font-cormorant italic font-bold text-[18px] leading-tight line-clamp-1 md:text-[20px] ${isSoldOut ? "text-black/25" : "text-[#C8622A]"}`}>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3 className="font-cormorant italic font-bold text-[18px] leading-tight line-clamp-1 md:text-[20px] text-[#C8622A]">
               {item.name}
             </h3>
-            {isSoldOut && (
-              <span className="flex-shrink-0 text-[9px] px-1.5 py-0.5 rounded-full bg-black/8 text-black/30 font-outfit font-medium tracking-wide uppercase border border-black/10">
-                Esgotado
-              </span>
-            )}
           </div>
 
           {item.description && (
@@ -83,8 +83,13 @@ export function ItemCard({ item, index }: ItemCardProps) {
           )}
 
           <div className="flex items-center gap-2 mt-2">
-            <div className="h-px flex-1 bg-[#C8622A]/20" />
-            <p className={`font-outfit font-bold text-[13px] tracking-wide md:text-[14px] ${isSoldOut ? "text-black/25" : "text-[#C8622A]"}`}>
+            {isSoldOut && (
+              <span className="flex-shrink-0 text-[9px] px-2 py-0.5 rounded-full bg-red-500 text-white font-outfit font-bold tracking-widest uppercase">
+                Esgotado
+              </span>
+            )}
+            <div className={`h-px bg-[#C8622A]/20 ${isSoldOut ? "w-3" : "flex-1"}`} />
+            <p className={`font-outfit font-bold text-[13px] tracking-wide md:text-[14px] text-[#C8622A] ${isSoldOut ? "line-through opacity-50" : ""}`}>
               {formatPrice(item.price)}
             </p>
           </div>

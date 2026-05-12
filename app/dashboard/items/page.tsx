@@ -5,21 +5,23 @@ import Image from "next/image"
 import { DashboardShell } from "@/components/dashboard/DashboardShell"
 import { ItemForm } from "@/components/dashboard/ItemForm"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Switch } from "@/components/ui/switch"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog"
-import { Plus, Pencil, Trash2, UtensilsCrossed } from "lucide-react"
+import { Plus, Pencil, Trash2, UtensilsCrossed, CheckCircle2, XCircle } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { formatPrice } from "@/lib/utils"
+import { UpgradeBanner } from "@/components/dashboard/UpgradeBanner"
 import toast from "react-hot-toast"
 import type { Category, Item } from "@/lib/mock-data"
+
+const FREE_ITEMS_LIMIT = 10
 
 export default function ItemsPage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [items, setItems] = useState<Item[]>([])
   const [restaurantId, setRestaurantId] = useState<string>("")
+  const [plan, setPlan] = useState<string>("free")
   const [loading, setLoading] = useState(true)
   const [formOpen, setFormOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<Item | null>(null)
@@ -32,12 +34,13 @@ export default function ItemsPage() {
 
     const { data: restaurant } = await supabase
       .from("restaurants")
-      .select("id")
+      .select("id, plan")
       .eq("user_id", user.id)
       .single()
 
     if (!restaurant) return
     setRestaurantId(restaurant.id)
+    setPlan(restaurant.plan ?? "free")
 
     const { data: cats } = await supabase
       .from("categories")
@@ -106,12 +109,15 @@ export default function ItemsPage() {
         </div>
         <Button
           onClick={() => { setEditingItem(null); setFormOpen(true) }}
-          className="bg-[#C8622A] hover:bg-[#A84E1E] text-white font-dm-sans gap-2"
+          disabled={plan === "free" && items.length >= FREE_ITEMS_LIMIT}
+          className="bg-[#C8622A] hover:bg-[#A84E1E] text-white font-dm-sans gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Plus className="w-4 h-4" />
           Novo Item
         </Button>
       </div>
+
+      <UpgradeBanner type="items" current={items.length} limit={plan === "free" ? FREE_ITEMS_LIMIT : Infinity} />
 
       {items.length === 0 && (
         <div className="bg-white rounded-xl border border-[#E8E0D5] py-16 flex flex-col items-center gap-3">
@@ -120,7 +126,7 @@ export default function ItemsPage() {
           </div>
           <p className="font-dm-sans font-medium text-[#1A1510]">Sem pratos ainda</p>
           <p className="font-dm-sans text-sm text-[#A89880]">Adiciona o teu primeiro prato</p>
-          <Button onClick={() => setFormOpen(true)} className="mt-2 bg-[#C8622A] hover:bg-[#A84E1E] text-white font-dm-sans gap-2">
+          <Button onClick={() => setFormOpen(true)} disabled={plan === "free" && items.length >= FREE_ITEMS_LIMIT} className="mt-2 bg-[#C8622A] hover:bg-[#A84E1E] text-white font-dm-sans gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
             <Plus className="w-4 h-4" />
             Novo Item
           </Button>
@@ -135,9 +141,9 @@ export default function ItemsPage() {
               {cat.items.map((item, idx) => (
                 <div
                   key={item.id}
-                  className={`flex items-center gap-4 px-5 py-3.5 hover:bg-[#FAF8F4] transition-colors ${idx !== 0 ? "border-t border-[#F2EFE9]" : ""}`}
+                  className={`flex items-center gap-4 px-5 py-3.5 transition-colors ${idx !== 0 ? "border-t border-[#F2EFE9]" : ""} ${item.is_active ? "hover:bg-[#FAF8F4]" : "bg-red-50/40 hover:bg-red-50/60"}`}
                 >
-                  <div className="w-12 h-12 rounded-lg overflow-hidden bg-[#F2EFE9] flex-shrink-0">
+                  <div className={`w-12 h-12 rounded-lg overflow-hidden bg-[#F2EFE9] flex-shrink-0 ${!item.is_active ? "opacity-50 grayscale" : ""}`}>
                     {item.image_url ? (
                       <Image src={item.image_url} alt={item.name} width={48} height={48} className="w-full h-full object-cover" />
                     ) : (
@@ -148,20 +154,23 @@ export default function ItemsPage() {
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="font-dm-sans font-medium text-sm text-[#1A1510] truncate">{item.name}</p>
-                      {!item.is_active && (
-                        <Badge variant="secondary" className="text-xs bg-[#F5F0EB] text-[#A89880] border-none">Esgotado</Badge>
-                      )}
-                    </div>
-                    <p className="font-dm-sans text-sm font-semibold text-[#C8622A] mt-0.5">{formatPrice(item.price)}</p>
+                    <p className={`font-dm-sans font-medium text-sm truncate ${item.is_active ? "text-[#1A1510]" : "text-[#1A1510]/40"}`}>{item.name}</p>
+                    <p className={`font-dm-sans text-sm font-semibold mt-0.5 ${item.is_active ? "text-[#C8622A]" : "text-[#C8622A]/40"}`}>{formatPrice(item.price)}</p>
                   </div>
 
-                  <Switch
-                    checked={item.is_active}
-                    onCheckedChange={() => toggleActive(item)}
-                    className="data-[state=checked]:bg-[#C8622A]"
-                  />
+                  <button
+                    onClick={() => toggleActive(item)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-dm-sans font-semibold transition-all duration-200 flex-shrink-0 ${
+                      item.is_active
+                        ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-500 hover:text-white"
+                        : "bg-red-100 text-red-600 hover:bg-red-500 hover:text-white"
+                    }`}
+                  >
+                    {item.is_active
+                      ? <><CheckCircle2 className="w-3.5 h-3.5" />Disponível</>
+                      : <><XCircle className="w-3.5 h-3.5" />Esgotado</>
+                    }
+                  </button>
 
                   <div className="flex items-center gap-1">
                     <button onClick={() => { setEditingItem(item); setFormOpen(true) }} className="p-2 rounded-lg text-[#A89880] hover:text-[#1A1510] hover:bg-[#F2EFE9] transition">

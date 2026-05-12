@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react"
 import Image from "next/image"
-import { UtensilsCrossed, Upload, X, ExternalLink, Phone, MapPin } from "lucide-react"
+import { UtensilsCrossed, Upload, X, ExternalLink, Phone, MapPin, Sparkles, Crown } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -42,6 +42,9 @@ export default function SettingsPage() {
   const [restaurantId, setRestaurantId] = useState("")
   const [userId, setUserId] = useState("")
   const [userEmail, setUserEmail] = useState("")
+  const [plan, setPlan] = useState<string>("free")
+  const [portalLoading, setPortalLoading] = useState(false)
+  const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
   const [logoFile, setLogoFile] = useState<File | null>(null)
@@ -83,6 +86,7 @@ export default function SettingsPage() {
 
       if (!restaurant) return
       setRestaurantId(restaurant.id)
+      setPlan(restaurant.plan ?? "free")
       setCurrentSlug(restaurant.slug)
       setLogoUrl(restaurant.logo_url ?? null)
       setLogoPreview(restaurant.logo_url ?? null)
@@ -181,6 +185,34 @@ export default function SettingsPage() {
       }
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleUpgrade = async () => {
+    setCheckoutLoading(true)
+    try {
+      const res = await fetch("/api/stripe/checkout", { method: "POST" })
+      const data = await res.json()
+      if (data.url) window.location.href = data.url
+      else toast.error("Erro ao iniciar checkout.")
+    } catch {
+      toast.error("Erro ao iniciar checkout.")
+    } finally {
+      setCheckoutLoading(false)
+    }
+  }
+
+  const handlePortal = async () => {
+    setPortalLoading(true)
+    try {
+      const res = await fetch("/api/stripe/portal", { method: "POST" })
+      const data = await res.json()
+      if (data.url) window.location.href = data.url
+      else toast.error("Erro ao abrir portal.")
+    } catch {
+      toast.error("Erro ao abrir portal.")
+    } finally {
+      setPortalLoading(false)
     }
   }
 
@@ -405,7 +437,47 @@ export default function SettingsPage() {
         </Button>
       </form>
 
-      {/* Secção 3 — Conta */}
+      {/* Secção — Plano */}
+      <div className="mt-6 bg-white rounded-xl border border-[#E8E0D5] p-6">
+        <h2 className="font-dm-sans font-semibold text-sm text-[#A89880] uppercase tracking-wide mb-4">Plano</h2>
+        {plan === "pro" ? (
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-amber-100 border border-amber-200 flex items-center justify-center">
+                <Crown className="w-4 h-4 text-amber-600" />
+              </div>
+              <div>
+                <p className="font-dm-sans font-semibold text-sm text-[#1A1510]">Plano Pro</p>
+                <p className="font-dm-sans text-xs text-[#A89880]">Categorias e itens ilimitados</p>
+              </div>
+            </div>
+            <button
+              onClick={handlePortal}
+              disabled={portalLoading}
+              className="px-3 py-1.5 text-xs font-dm-sans font-medium text-[#6B5E4E] border border-[#E8E0D5] rounded-lg hover:bg-[#F2EFE9] transition-colors disabled:opacity-50"
+            >
+              {portalLoading ? "A carregar..." : "Gerir subscrição"}
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="font-dm-sans font-semibold text-sm text-[#1A1510]">Plano Gratuito</p>
+              <p className="font-dm-sans text-xs text-[#A89880]">Máx. 3 categorias · Máx. 10 itens</p>
+            </div>
+            <button
+              onClick={handleUpgrade}
+              disabled={checkoutLoading}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 disabled:opacity-60 text-white text-xs font-dm-sans font-semibold transition-colors"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              {checkoutLoading ? "A redirecionar..." : "Upgrade para Pro"}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Secção — Conta */}
       <div className="mt-6 bg-white rounded-xl border border-[#E8E0D5] p-6 space-y-4">
         <h2 className="font-dm-sans font-semibold text-sm text-[#A89880] uppercase tracking-wide">Conta</h2>
         <div>

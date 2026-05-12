@@ -13,8 +13,22 @@ CREATE TABLE IF NOT EXISTS restaurants (
   slug        text NOT NULL UNIQUE,
   description text,
   logo_url    text,
-  created_at  timestamptz DEFAULT now()
+  cover_url                text,
+  phone                    text,
+  google_maps_url          text,
+  plan                    text NOT NULL DEFAULT 'free',
+  stripe_customer_id      text,
+  stripe_subscription_id  text,
+  created_at              timestamptz DEFAULT now()
 );
+
+-- Migração (se a tabela já existir — executa no Supabase SQL Editor):
+-- ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS cover_url text;
+-- ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS phone text;
+-- ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS google_maps_url text;
+-- ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS plan text NOT NULL DEFAULT 'free';
+-- ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS stripe_customer_id text;
+-- ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS stripe_subscription_id text;
 
 CREATE TABLE IF NOT EXISTS categories (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -76,21 +90,12 @@ CREATE POLICY "Dono pode gerir categorias do seu restaurante"
   );
 
 -- Items
-CREATE POLICY "Leitura pública de itens ativos"
-  ON items FOR SELECT USING (is_active = true);
-
-CREATE POLICY "Dono pode ler todos os itens (incluindo esgotados)"
-  ON items FOR SELECT
-  USING (
-    category_id IN (
-      SELECT c.id FROM categories c
-      JOIN restaurants r ON c.restaurant_id = r.id
-      WHERE r.user_id = auth.uid()
-    )
-  );
+-- Todos os itens (incluindo esgotados) são visíveis publicamente
+CREATE POLICY "Leitura pública de todos os itens"
+  ON items FOR SELECT USING (true);
 
 CREATE POLICY "Dono pode gerir itens do seu restaurante"
-  ON items FOR INSERT UPDATE DELETE
+  ON items FOR ALL
   USING (
     category_id IN (
       SELECT c.id FROM categories c

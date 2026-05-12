@@ -35,7 +35,6 @@ async function getMenuData(slug: string): Promise<MenuData | null> {
     .from("items")
     .select("*")
     .in("category_id", categories.map((c) => c.id))
-    .eq("is_active", true)
     .order("position")
 
   const categoriesWithItems = categories.map((cat) => ({

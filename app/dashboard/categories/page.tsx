@@ -9,12 +9,16 @@ import {
 } from "@/components/ui/dialog"
 import { Plus, Pencil, Trash2, ChevronUp, ChevronDown, FolderOpen } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import { UpgradeBanner } from "@/components/dashboard/UpgradeBanner"
 import toast from "react-hot-toast"
 import type { Category } from "@/lib/mock-data"
+
+const FREE_CATEGORIES_LIMIT = 3
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [restaurantId, setRestaurantId] = useState<string>("")
+  const [plan, setPlan] = useState<string>("free")
   const [loading, setLoading] = useState(true)
   const [formOpen, setFormOpen] = useState(false)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
@@ -27,12 +31,13 @@ export default function CategoriesPage() {
 
     const { data: restaurant } = await supabase
       .from("restaurants")
-      .select("id")
+      .select("id, plan")
       .eq("user_id", user.id)
       .single()
 
     if (!restaurant) return
     setRestaurantId(restaurant.id)
+    setPlan(restaurant.plan ?? "free")
 
     const { data } = await supabase
       .from("categories")
@@ -93,12 +98,15 @@ export default function CategoriesPage() {
         </div>
         <Button
           onClick={() => { setEditingCategory(null); setFormOpen(true) }}
-          className="bg-[#C8622A] hover:bg-[#A84E1E] text-white font-dm-sans gap-2"
+          disabled={plan === "free" && categories.length >= FREE_CATEGORIES_LIMIT}
+          className="bg-[#C8622A] hover:bg-[#A84E1E] text-white font-dm-sans gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Plus className="w-4 h-4" />
           Nova Categoria
         </Button>
       </div>
+
+      <UpgradeBanner type="categories" current={categories.length} limit={plan === "free" ? FREE_CATEGORIES_LIMIT : Infinity} />
 
       {categories.length === 0 ? (
         <div className="bg-white rounded-xl border border-[#E8E0D5] py-16 flex flex-col items-center gap-3">
@@ -109,7 +117,8 @@ export default function CategoriesPage() {
           <p className="font-dm-sans text-sm text-[#A89880]">Cria a tua primeira categoria para começar</p>
           <Button
             onClick={() => setFormOpen(true)}
-            className="mt-2 bg-[#C8622A] hover:bg-[#A84E1E] text-white font-dm-sans gap-2"
+            disabled={plan === "free" && categories.length >= FREE_CATEGORIES_LIMIT}
+            className="mt-2 bg-[#C8622A] hover:bg-[#A84E1E] text-white font-dm-sans gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Plus className="w-4 h-4" />
             Nova Categoria

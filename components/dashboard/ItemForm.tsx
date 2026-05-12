@@ -5,10 +5,8 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
-import { Switch } from "@/components/ui/switch"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select"
-import { ImagePlus, UtensilsCrossed, X } from "lucide-react"
+import { ImagePlus, UtensilsCrossed, X, CheckCircle2, XCircle } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import toast from "react-hot-toast"
 import type { Category, Item } from "@/lib/mock-data"
@@ -212,31 +210,48 @@ export function ItemForm({ open, onOpenChange, item, categories, restaurantId, o
             </div>
             <div>
               <label className={labelClass}>Categoria</label>
-              <Select value={watch("category_id") ?? ""} onValueChange={(v) => setValue("category_id", v ?? "")}>
-                <SelectTrigger className="w-full bg-white border-[#E8E0D5] text-sm font-dm-sans text-[#1A1510] rounded-xl shadow-sm focus:ring-[#C8622A]/25 focus:border-[#C8622A]">
-                  <span className={`min-w-0 flex-1 text-left truncate ${!watch("category_id") ? "text-[#C4B8A8]" : ""}`}>
-                    {watch("category_id")
-                      ? categories.find((c) => c.id === watch("category_id"))?.name
-                      : "Seleciona..."}
-                  </span>
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id} className="font-dm-sans">{cat.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <select
+                {...register("category_id")}
+                className={`${inputClass} ${!watch("category_id") ? "text-[#C4B8A8]" : ""}`}
+              >
+                <option value="" disabled hidden>Seleciona...</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id} className="text-[#1A1510]">{cat.name}</option>
+                ))}
+              </select>
               {errors.category_id && <p className="mt-1.5 text-xs text-red-600 font-dm-sans">{errors.category_id.message}</p>}
             </div>
           </div>
 
           {/* Disponibilidade */}
-          <div className="flex items-center justify-between py-3 px-4 bg-white rounded-xl border border-[#E8E0D5] shadow-sm">
-            <div>
-              <p className="text-sm font-dm-sans font-medium text-[#1A1510]">Disponível</p>
-              <p className="text-xs font-dm-sans text-[#A89880]">{isActive ? "Visível no cardápio" : "Marcado como esgotado"}</p>
+          <div>
+            <label className={labelClass}>Disponibilidade</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setValue("is_active", true)}
+                className={`flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-dm-sans font-semibold transition-all duration-200 ${
+                  isActive
+                    ? "bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-200"
+                    : "bg-white border-[#E8E0D5] text-[#A89880] hover:border-emerald-300 hover:text-emerald-600 hover:bg-emerald-50"
+                }`}
+              >
+                <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                Disponível
+              </button>
+              <button
+                type="button"
+                onClick={() => setValue("is_active", false)}
+                className={`flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-dm-sans font-semibold transition-all duration-200 ${
+                  !isActive
+                    ? "bg-red-500 border-red-500 text-white shadow-md shadow-red-200"
+                    : "bg-white border-[#E8E0D5] text-[#A89880] hover:border-red-300 hover:text-red-500 hover:bg-red-50"
+                }`}
+              >
+                <XCircle className="w-4 h-4 flex-shrink-0" />
+                Esgotado
+              </button>
             </div>
-            <Switch checked={isActive} onCheckedChange={(v) => setValue("is_active", v)} className="data-[state=checked]:bg-[#C8622A]" />
           </div>
 
           {/* Botões */}

@@ -3,9 +3,6 @@ import { stripe } from "@/lib/stripe"
 import { createAdminClient } from "@/lib/supabase/admin"
 import Stripe from "stripe"
 
-// Necessário para verificar a assinatura do webhook (body raw)
-export const config = { api: { bodyParser: false } }
-
 export async function POST(req: NextRequest) {
   const body = await req.text()
   const sig = req.headers.get("stripe-signature")
@@ -65,10 +62,11 @@ export async function POST(req: NextRequest) {
     }
 
     case "invoice.payment_failed": {
-      const invoice = event.data.object as Stripe.Invoice
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const invoice = event.data.object as any
       const subId = typeof invoice.subscription === "string"
         ? invoice.subscription
-        : invoice.subscription?.id
+        : (invoice.subscription?.id ?? null)
 
       if (!subId) break
 

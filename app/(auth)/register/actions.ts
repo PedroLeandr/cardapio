@@ -3,7 +3,7 @@
 import https from "https"
 
 const RESERVED_SLUGS = new Set([
-  "dashboard", "login", "register", "api", "admin", "demo",
+  "dashboard", "login", "register", "api", "admin",
   "app", "www", "settings", "help", "about", "contact",
   "support", "blog", "static", "assets", "public", "null",
   "undefined", "home", "index", "auth", "oauth", "callback",

@@ -35,7 +35,7 @@ export const mockRestaurant: Restaurant = {
   id: "mock-restaurant-1",
   user_id: "mock-user-1",
   name: "Tasca do Zé",
-  slug: "demo",
+  slug: "cardapio-digital",
   description: "Cozinha portuguesa tradicional, feita com amor e ingredientes da nossa terra.",
   logo_url: null,
   cover_url: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200&q=80",

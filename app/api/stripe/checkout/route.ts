@@ -24,6 +24,18 @@ export async function POST() {
 
   // Reutiliza customer Stripe existente ou cria novo
   let customerId = restaurant.stripe_customer_id
+  if (customerId) {
+    // Verifica se o customer existe no ambiente atual (test vs live)
+    try {
+      await stripe.customers.retrieve(customerId)
+    } catch {
+      customerId = null
+      await supabase
+        .from("restaurants")
+        .update({ stripe_customer_id: null })
+        .eq("id", restaurant.id)
+    }
+  }
   if (!customerId) {
     const customer = await stripe.customers.create({
       email: user.email,

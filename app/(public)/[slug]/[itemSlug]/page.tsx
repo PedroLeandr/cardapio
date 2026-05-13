@@ -4,7 +4,6 @@ import Image from "next/image"
 import Link from "next/link"
 import { X, UtensilsCrossed } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
-import { getMockMenuData } from "@/lib/mock-data"
 import { generateSlug, formatPrice } from "@/lib/utils"
 
 interface Props {
@@ -16,38 +15,31 @@ async function getItem(slug: string, itemSlug: string) {
   let restaurantName = ""
   let logoUrl: string | null = null
 
-  if (slug === "demo") {
-    const data = getMockMenuData()
-    restaurantName = data.restaurant.name
-    logoUrl = data.restaurant.logo_url
-    allItems = data.categories.flatMap((c) => c.items)
-  } else {
-    const supabase = await createClient()
+  const supabase = await createClient()
 
-    const { data: restaurant } = await supabase
-      .from("restaurants")
-      .select("id, name, logo_url")
-      .eq("slug", slug)
-      .single()
+  const { data: restaurant } = await supabase
+    .from("restaurants")
+    .select("id, name, logo_url")
+    .eq("slug", slug)
+    .single()
 
-    if (!restaurant) return null
-    restaurantName = restaurant.name
-    logoUrl = restaurant.logo_url ?? null
+  if (!restaurant) return null
+  restaurantName = restaurant.name
+  logoUrl = restaurant.logo_url ?? null
 
-    const { data: categories } = await supabase
-      .from("categories")
-      .select("id")
-      .eq("restaurant_id", restaurant.id)
+  const { data: categories } = await supabase
+    .from("categories")
+    .select("id")
+    .eq("restaurant_id", restaurant.id)
 
-    if (!categories?.length) return null
+  if (!categories?.length) return null
 
-    const { data: items } = await supabase
-      .from("items")
-      .select("*")
-      .in("category_id", categories.map((c) => c.id))
+  const { data: items } = await supabase
+    .from("items")
+    .select("*")
+    .in("category_id", categories.map((c) => c.id))
 
-    allItems = items ?? []
-  }
+  allItems = items ?? []
 
   const item = allItems.find((i) => generateSlug(i.name) === itemSlug)
   if (!item) return null

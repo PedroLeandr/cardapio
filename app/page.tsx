@@ -1,6 +1,6 @@
 import Image from "next/image"
 import Link from "next/link"
-import { QrCode, Smartphone, Zap, ArrowRight, Check, UtensilsCrossed, X } from "lucide-react"
+import { QrCode, Smartphone, Zap, ArrowRight, Check, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const features = [
@@ -20,7 +20,7 @@ const features = [
     icon: Zap,
     title: "Atualiza em Segundos",
     description:
-      "Acabou o prato do dia? Marca como esgotado e o cardápio atualiza-se automaticamente.",
+      "Acabou o prato do dia? Marca como esgotado e o cardápio atualiza automaticamente.",
   },
 ]
 
@@ -28,7 +28,7 @@ const steps = [
   {
     number: "01",
     title: "Cria a tua conta",
-    description: "Regista-te em menos de um minuto. Sem cartão de crédito.",
+    description: "Cria a tua conta em menos de um minuto. Sem cartão de crédito.",
   },
   {
     number: "02",
@@ -101,7 +101,7 @@ export default function LandingPage() {
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#F5E6DC] border border-[#E8D5C8] mb-8">
           <span className="w-1.5 h-1.5 rounded-full bg-[#C8622A]" />
           <span className="font-dm-sans text-xs font-medium text-[#C8622A]">
-            Plano gratuito disponível — sem cartão de crédito
+            Plano gratuito disponível, sem cartão de crédito
           </span>
         </div>
 
@@ -115,7 +115,7 @@ export default function LandingPage() {
 
         <p className="font-lato text-lg text-[#6B5E4E] max-w-xl mx-auto mb-10 leading-relaxed">
           Cria o teu cardápio digital em minutos. Os teus clientes acedem pelo
-          QR code ou link — sem app, sem fricção, com uma experiência premium.
+          QR code ou link. Sem app, sem fricção, com uma experiência premium.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -137,71 +137,86 @@ export default function LandingPage() {
       </section>
 
       {/* Mockup */}
-      <section className="max-w-3xl mx-auto px-6 mb-24">
-        <div className="bg-white rounded-2xl border border-[#E8E0D5] shadow-xl shadow-[#1A1510]/5 overflow-hidden">
-          <div className="bg-[#FAF8F4] px-6 py-5 border-b border-[#E8E0D5]">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-[#F5E6DC] border-2 border-[#E8D5C8] flex items-center justify-center">
-                <UtensilsCrossed className="w-6 h-6 text-[#C8622A]" />
-              </div>
-              <div>
-                <div className="h-5 w-32 bg-[#1A1510] rounded-md mb-1.5" />
-                <div className="h-3 w-48 bg-[#E8E0D5] rounded-md" />
-              </div>
-            </div>
-          </div>
-          <div className="bg-[#FAF8F4] px-6 py-3 border-b border-[#E8E0D5] flex gap-2">
-            <div className="px-4 py-1.5 rounded-full bg-[#C8622A] text-white text-xs font-dm-sans font-medium">
-              Entradas
-            </div>
-            <div className="px-4 py-1.5 rounded-full bg-[#F2EFE9] text-[#6B5E4E] text-xs font-dm-sans">
-              Pratos Principais
-            </div>
-            <div className="px-4 py-1.5 rounded-full bg-[#F2EFE9] text-[#6B5E4E] text-xs font-dm-sans">
-              Sobremesas
-            </div>
-          </div>
-          <div className="px-6 py-5 space-y-3">
-            {[
-              { name: "Caldo Verde", price: "4,50 €", desc: "Sopa tradicional de couve galega com chouriço" },
-              { name: "Pataniscas de Bacalhau", price: "8,50 €", desc: "Frituras de bacalhau com salsa fresca" },
-            ].map((item, i) => (
-              <div key={i} className="flex gap-4 p-4 bg-[#FAF8F4] rounded-xl border border-[#E8E0D5]">
-                <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-[#F5E6DC] to-[#F2EFE9] flex items-center justify-center flex-shrink-0">
-                  <UtensilsCrossed className="w-6 h-6 text-[#A89880]" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-playfair font-semibold text-[#1A1510] text-sm">{item.name}</p>
-                  <p className="font-lato text-xs text-[#6B5E4E] mt-0.5">{item.desc}</p>
-                  <p className="font-lato font-semibold text-sm text-[#C8622A] mt-1.5">{item.price}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+      <section className="max-w-3xl mx-auto px-6 mb-24 flex justify-center">
+        <div className="relative w-[360px] h-[640px] rounded-[32px] overflow-hidden shadow-2xl ring-[6px] ring-black/10">
+          <iframe
+            src="/cardapio-digital"
+            title="Preview do cardápio"
+            style={{
+              border: "none",
+              display: "block",
+              width: "100%",
+              height: "100%",
+              pointerEvents: "none",
+            }}
+          />
         </div>
       </section>
 
       {/* Como funciona */}
-      <section className="max-w-5xl mx-auto px-6 py-16">
-        <div className="text-center mb-14">
-          <h2 className="font-playfair text-3xl font-bold text-[#1A1510] mb-3">
-            Pronto em 3 passos
-          </h2>
-          <p className="font-lato text-[#6B5E4E]">Sem tutoriais, sem complicações.</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-          {steps.map(({ number, title, description }, i) => (
-            <div key={number} className="relative">
-              {i < steps.length - 1 && (
-                <div className="hidden md:block absolute top-8 left-[calc(100%_-_1rem)] w-[calc(100%_-_2rem)] h-px bg-[#E8D5C8] z-0" />
-              )}
-              <div className="font-playfair text-7xl font-bold text-[#F5E6DC] leading-none mb-3 select-none">
-                {number}
+      <section className="max-w-xl mx-auto px-6 py-20">
+        <div
+          className="border border-[#CFC0AD] p-[9px]"
+          style={{ boxShadow: "0 24px 64px rgba(26,21,16,0.07), 0 4px 16px rgba(26,21,16,0.04)" }}
+        >
+          <div className="border border-[#CFC0AD] bg-[#FEFCF9] px-8 py-10 md:px-12 md:py-12">
+
+            {/* Cabeçalho */}
+            <div className="text-center mb-10">
+              <p className="font-lato text-[9px] uppercase tracking-[0.6em] text-[#A89880] mb-4">
+                Como funciona
+              </p>
+              <h2 className="font-playfair text-[1.9rem] md:text-[2.2rem] font-bold text-[#1A1510] leading-tight">
+                Pronto em 3 passos
+              </h2>
+              <div className="flex items-center gap-3 mt-5">
+                <div className="h-px flex-1 bg-[#E0D1C0]" />
+                <span className="text-[#C8622A] text-[9px] tracking-widest">◆</span>
+                <div className="h-px flex-1 bg-[#E0D1C0]" />
               </div>
-              <h3 className="font-dm-sans font-semibold text-[#1A1510] mb-2">{title}</h3>
-              <p className="font-dm-sans text-sm text-[#6B5E4E] leading-relaxed">{description}</p>
             </div>
-          ))}
+
+            {/* Passos */}
+            {steps.map(({ number, title, description }, i) => (
+              <div key={number}>
+                <div className="flex items-start gap-5 py-6">
+                  <span
+                    className="font-playfair italic font-bold select-none flex-shrink-0 leading-[0.85] text-[#EDE3D8]"
+                    style={{ fontSize: "3.8rem", width: "3rem" }}
+                  >
+                    {number}
+                  </span>
+                  <div className="flex-1 pt-1.5">
+                    <h3 className="font-playfair font-semibold text-[1.05rem] text-[#1A1510] mb-1.5">
+                      {title}
+                    </h3>
+                    <p className="font-lato text-sm text-[#7A6B5D] leading-relaxed">
+                      {description}
+                    </p>
+                  </div>
+                </div>
+                {i < steps.length - 1 && (
+                  <div
+                    className="h-px"
+                    style={{
+                      backgroundImage:
+                        "repeating-linear-gradient(90deg, #D8CBBF 0, #D8CBBF 5px, transparent 0, transparent 11px)",
+                    }}
+                  />
+                )}
+              </div>
+            ))}
+
+            {/* Ornamento de rodapé */}
+            <div className="flex items-center justify-center gap-2 mt-9">
+              <div className="h-px w-8 bg-[#E0D1C0]" />
+              <div className="w-1 h-1 rounded-full bg-[#C8622A]/40" />
+              <div className="w-1.5 h-1.5 rounded-full bg-[#C8622A]" />
+              <div className="w-1 h-1 rounded-full bg-[#C8622A]/40" />
+              <div className="h-px w-8 bg-[#E0D1C0]" />
+            </div>
+
+          </div>
         </div>
       </section>
 

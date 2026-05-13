@@ -11,8 +11,6 @@ interface Props {
 }
 
 async function getMenuData(slug: string): Promise<MenuData | null> {
-  if (slug === "demo") return getMockMenuData()
-
   const supabase = await createClient()
 
   const { data: restaurant } = await supabase

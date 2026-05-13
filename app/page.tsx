@@ -125,7 +125,7 @@ export default function LandingPage() {
               <ArrowRight className="w-4 h-4" />
             </Button>
           </Link>
-          <Link href="/demo">
+          <Link href="/cardapio-digital">
             <Button
               variant="outline"
               className="w-full sm:w-auto border-[#E8E0D5] text-[#6B5E4E] hover:bg-[#F2EFE9] font-dm-sans font-medium px-8 py-3 text-base"

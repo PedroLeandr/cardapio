@@ -1,10 +1,16 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
+import { stripe } from "@/lib/stripe"
 import { DashboardShell } from "@/components/dashboard/DashboardShell"
 import { QRCodeDisplay } from "@/components/dashboard/QRCodeDisplay"
 import { FolderOpen, UtensilsCrossed, ExternalLink } from "lucide-react"
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: { upgrade?: string; session_id?: string }
+}) {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -15,6 +21,36 @@ export default async function DashboardPage() {
     .select("*")
     .eq("user_id", user.id)
     .single()
+
+  // Verificar upgrade após pagamento Stripe.
+  // O webhook não alcança servidores locais, então verificamos aqui diretamente.
+  if (
+    searchParams.upgrade === "success" &&
+    searchParams.session_id &&
+    restaurant?.plan !== "pro"
+  ) {
+    try {
+      const session = await stripe.checkout.sessions.retrieve(searchParams.session_id)
+      if (
+        session.payment_status === "paid" &&
+        session.metadata?.restaurant_id === restaurant?.id
+      ) {
+        await createAdminClient()
+          .from("restaurants")
+          .update({
+            plan: "pro",
+            stripe_subscription_id: typeof session.subscription === "string"
+              ? session.subscription
+              : null,
+          })
+          .eq("id", restaurant!.id)
+
+        if (restaurant) restaurant.plan = "pro"
+      }
+    } catch (e) {
+      console.error("Stripe session verification failed:", e)
+    }
+  }
 
   if (!restaurant) {
     return (

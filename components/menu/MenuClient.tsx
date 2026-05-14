@@ -44,7 +44,7 @@ export function MenuClient({ categories, slug }: MenuClientProps) {
       : categories.filter((c) => c.id === activeCategory)
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-white">
       {/* Search bar */}
       <div className="px-5 pt-6 pb-4">
         <div className="relative flex items-center bg-[#F3F3F3] rounded-full h-[52px] shadow-[0_1px_6px_rgba(0,0,0,0.05)]">
@@ -77,7 +77,7 @@ export function MenuClient({ categories, slug }: MenuClientProps) {
                   onClick={() => setActiveCategory(cat.id)}
                   className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] font-outfit font-medium transition-all duration-200 whitespace-nowrap ${
                     isActive
-                      ? "bg-[#C8622A] text-white shadow-[0_3px_12px_rgba(200,98,42,0.35)]"
+                      ? "bg-[#C8622A] text-white"
                       : "bg-[#F0F0F0] text-gray-500 hover:bg-gray-200"
                   }`}
                 >
@@ -93,7 +93,7 @@ export function MenuClient({ categories, slug }: MenuClientProps) {
       )}
 
       {/* Main content */}
-      <main className="pb-12 pt-4">
+      <main className="pb-0 pt-4">
         {isSearching ? (
           searchResults.length > 0 ? (
             <div className="px-5 space-y-3">

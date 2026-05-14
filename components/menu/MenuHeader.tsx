@@ -8,9 +8,17 @@ interface MenuHeaderProps {
 
 export function MenuHeader({ restaurant }: MenuHeaderProps) {
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-[0_1px_16px_rgba(0,0,0,0.05)]">
-      <div className="max-w-lg mx-auto px-5 py-4">
-        <div className="flex items-center gap-3">
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-[0_1px_16px_rgba(0,0,0,0.05)] overflow-hidden relative">
+      {/* Background texture */}
+      <div
+        className="absolute inset-0 bg-center bg-cover pointer-events-none"
+        style={{
+          backgroundImage: "url('/fundo-sem-fundo.png')",
+          opacity: 0.06,
+        }}
+      />
+      <div className="relative max-w-lg mx-auto px-5 py-4">
+        <div className="flex items-center justify-between relative">
           {/* Left: profile logo */}
           <div className="flex-shrink-0">
             {restaurant.logo_url ? (
@@ -32,16 +40,26 @@ export function MenuHeader({ restaurant }: MenuHeaderProps) {
             )}
           </div>
 
-          {/* Center: location + name */}
-          <div className="flex-1 flex items-center justify-center gap-1.5 min-w-0">
-            <MapPin className="w-4 h-4 text-[#C8622A] flex-shrink-0" />
-            <span className="font-outfit font-semibold text-gray-900 text-[15px] truncate">
+          {/* Center: name — absolutely centered */}
+          <div className="absolute inset-x-0 flex justify-center pointer-events-none">
+            <span className="font-outfit font-semibold text-gray-900 text-[15px] truncate max-w-[50%]">
               {restaurant.name}
             </span>
           </div>
 
-          {/* Right: phone icon */}
-          <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center">
+          {/* Right: maps + phone */}
+          <div className="flex-shrink-0 flex items-center gap-1">
+            {restaurant.google_maps_url && (
+              <a
+                href={restaurant.google_maps_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Ver localização"
+                className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+              >
+                <MapPin className="w-5 h-5 text-gray-500" />
+              </a>
+            )}
             {restaurant.phone && (
               <a
                 href={`tel:${restaurant.phone}`}
@@ -53,7 +71,7 @@ export function MenuHeader({ restaurant }: MenuHeaderProps) {
             )}
           </div>
         </div>
-      </div>
+        </div>
     </header>
   )
 }

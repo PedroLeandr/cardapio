@@ -1,4 +1,4 @@
-import { UtensilsCrossed } from "lucide-react"
+import { UtensilsCrossed, ChevronRight } from "lucide-react"
 import Image from "next/image"
 import { formatPrice } from "@/lib/utils"
 import type { Item } from "@/lib/mock-data"
@@ -8,112 +8,110 @@ interface ItemCardProps {
   index: number
 }
 
-export function ItemCard({ item, index }: ItemCardProps) {
+export function ItemCard({ item }: ItemCardProps) {
   const isSoldOut = !item.is_active
-  const reversed = index % 2 !== 0
 
-  const imageHalf = (
-    <div className="w-1/2 flex items-center justify-center py-5">
-      <div className="relative w-28 h-28 md:w-32 md:h-32">
-        {reversed ? (
-          <div
-            className="absolute -top-5 -bottom-5 -left-5 bg-[#C8622A] rounded-l-full"
-            style={{ right: "-100vw" }}
+  return (
+    <div className="relative w-72 flex-shrink-0">
+      {/* Floating circular image */}
+      <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-10 w-40 h-40 rounded-full overflow-hidden ring-[3px] ring-white shadow-[0_8px_28px_rgba(0,0,0,0.22)]">
+        {item.image_url ? (
+          <Image
+            src={item.image_url}
+            alt={item.name}
+            width={160}
+            height={160}
+            className={`w-full h-full object-cover transition-all ${isSoldOut ? "grayscale opacity-60" : ""}`}
           />
         ) : (
           <div
-            className="absolute -top-5 -bottom-5 -right-5 bg-[#C8622A] rounded-r-full"
-            style={{ left: "-100vw" }}
-          />
+            className="w-full h-full flex items-center justify-center"
+            style={{ background: "rgba(255,255,255,0.18)" }}
+          >
+            <UtensilsCrossed className={`w-9 h-9 ${isSoldOut ? "text-white/30" : "text-white/70"}`} />
+          </div>
         )}
-        <div className="relative z-10 w-full h-full rounded-full overflow-hidden bg-[#2a2a2a] ring-2 ring-white">
-          {item.image_url ? (
-            <Image
-              src={item.image_url}
-              alt={item.name}
-              width={128}
-              height={128}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <UtensilsCrossed className="w-8 h-8 text-white/20 md:w-9 md:h-9" />
-            </div>
-          )}
-          {isSoldOut && (
-            <div className="absolute inset-0 bg-black/55 flex items-center justify-center">
-              <span className="text-white text-[10px] font-outfit font-bold uppercase tracking-[0.15em] text-center leading-tight px-2">
-                Esgotado
-              </span>
-            </div>
-          )}
-        </div>
+        {/* Sold-out overlay on image */}
+        {isSoldOut && (
+          <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+            <span className="font-outfit font-bold text-white text-[11px] uppercase tracking-widest text-center px-2 leading-tight drop-shadow">
+              Esgotado
+            </span>
+          </div>
+        )}
       </div>
-    </div>
-  )
 
-  const textHalf = (
-    <div className="w-1/2 flex items-center justify-center py-5">
-      <div className="relative w-full h-28 md:h-32">
+      {/* Card */}
+      <div
+        className={`rounded-[28px] min-h-[380px] flex flex-col overflow-hidden relative ${
+          isSoldOut
+            ? "shadow-[0_6px_28px_rgba(0,0,0,0.1)]"
+            : "shadow-[0_6px_28px_rgba(0,0,0,0.13)]"
+        }`}
+        style={{
+          background: isSoldOut
+            ? "linear-gradient(155deg, #9A6040 0%, #3D2010 100%)"
+            : "linear-gradient(155deg, #D4703A 0%, #6B2A0A 100%)",
+        }}
+      >
+        {/* Background texture */}
         <div
-          className="absolute -top-5 -bottom-5 bg-white"
-          style={reversed ? {
-            left: "-100vw",
-            right: "-50%",
-            maskImage: "radial-gradient(circle 92px at 100% 50%, transparent 92px, black 93px)",
-            WebkitMaskImage: "radial-gradient(circle 92px at 100% 50%, transparent 92px, black 93px)",
-          } : {
-            left: "-50%",
-            right: "-100vw",
-            maskImage: "radial-gradient(circle 92px at 0px 50%, transparent 92px, black 93px)",
-            WebkitMaskImage: "radial-gradient(circle 92px at 0px 50%, transparent 92px, black 93px)",
+          className="absolute inset-0 bg-center bg-cover pointer-events-none"
+          style={{
+            backgroundImage: "url('/fundo-sem-fundo.png')",
+            opacity: 0.20,
+            filter: "brightness(0) invert(1)",
           }}
         />
-        <div className={`relative z-10 h-full flex flex-col justify-center gap-0 ${reversed ? "pr-5 pl-4" : "pl-5 pr-4"}`}>
-          <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="font-cormorant italic font-bold text-[18px] leading-tight line-clamp-1 md:text-[20px] text-[#C8622A]">
-              {item.name}
-            </h3>
+
+        <div className="relative pt-32 px-5 pb-6 flex flex-col flex-1">
+          {/* Name */}
+          <h3 className={`font-outfit font-bold text-[21px] leading-snug line-clamp-1 ${isSoldOut ? "text-white/60" : "text-white"}`}>
+            {item.name}
+          </h3>
+
+          {/* Description — flex-1 spacer always present */}
+          <div className="flex-1 mt-3">
+            {item.description && (
+              <p className={`font-outfit text-[14px] leading-relaxed line-clamp-3 drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)] ${isSoldOut ? "text-white/45" : "text-white/85"}`}>
+                {item.description}
+              </p>
+            )}
           </div>
 
-          {item.description && (
-            <p className="font-outfit text-[11px] text-black/50 line-clamp-2 leading-relaxed mt-1 md:text-[12px]">
-              {item.description}
-            </p>
-          )}
+          {/* Status badge — centered, always at bottom */}
+          <div className="mt-4 flex justify-center">
+            <span
+              className={`inline-block font-outfit font-semibold text-[13px] px-4 py-1.5 rounded-full ${
+                isSoldOut
+                  ? "bg-white/15 text-white/50 border border-white/20"
+                  : "bg-white/20 text-white/90"
+              }`}
+            >
+              {isSoldOut ? "Esgotado" : "Disponível"}
+            </span>
+          </div>
 
-          <div className="flex items-center gap-2 mt-2">
-            {isSoldOut && (
-              <span className="flex-shrink-0 text-[9px] px-2 py-0.5 rounded-full bg-red-500 text-white font-outfit font-bold tracking-widest uppercase">
-                Esgotado
-              </span>
-            )}
-            <div className={`h-px bg-[#C8622A]/20 ${isSoldOut ? "w-3" : "flex-1"}`} />
-            <p className={`font-outfit font-bold text-[13px] tracking-wide md:text-[14px] text-[#C8622A] ${isSoldOut ? "line-through opacity-50" : ""}`}>
+          {/* Bottom row: price + action — always at bottom */}
+          <div className="mt-4 flex items-end justify-between">
+            <p
+              className={`font-outfit font-bold text-[21px] ${
+                isSoldOut ? "text-white/40 line-through" : "text-white"
+              }`}
+            >
               {formatPrice(item.price)}
             </p>
+
+            {/* Action button with "!" */}
+            <button
+              aria-label="Ver detalhes"
+              className={`w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-[0_4px_14px_rgba(0,0,0,0.18)] hover:scale-105 active:scale-95 transition-transform ${isSoldOut ? "opacity-40" : ""}`}
+            >
+              <ChevronRight className="w-5 h-5 text-[#C8622A]" />
+            </button>
           </div>
         </div>
       </div>
-    </div>
-  )
-
-  return (
-    <div
-      className="item-card-animate relative flex items-stretch hover:-translate-y-0.5 transition-all duration-200 group"
-      style={{ ["--index" as string]: index }}
-    >
-      {reversed ? (
-        <>
-          {textHalf}
-          {imageHalf}
-        </>
-      ) : (
-        <>
-          {imageHalf}
-          {textHalf}
-        </>
-      )}
     </div>
   )
 }

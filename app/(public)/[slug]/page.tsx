@@ -67,29 +67,16 @@ export default async function MenuPage({ params }: Props) {
   const { restaurant, categories } = data
   const activeCategoriesWithItems = categories.filter((cat) => cat.items.length > 0)
 
-  const bgUrl =
-    restaurant.cover_url ??
-    "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200&q=80"
-
   return (
-    <div className="min-h-screen flex flex-col">
-      <div
-        className="fixed top-0 inset-x-0 -z-10 bg-cover bg-center"
-        style={{ backgroundImage: `url('${bgUrl}')`, height: "100lvh" }}
-      />
-      <div
-        className="fixed top-0 inset-x-0 -z-10 bg-black/65"
-        style={{ height: "100lvh" }}
-      />
-
+    <div className="min-h-screen flex flex-col bg-white">
       <MenuHeader restaurant={restaurant} />
       <div className="flex-1">
         <MenuClient categories={activeCategoriesWithItems} slug={params.slug} />
       </div>
 
-      <footer className="py-6 border-t border-white/10 md:py-8">
-        <div className="max-w-3xl mx-auto px-4 text-center md:px-6">
-          <p className="font-lato text-xs text-white/40">
+      <footer className="py-6 border-t border-gray-100">
+        <div className="max-w-lg mx-auto px-5 text-center">
+          <p className="font-outfit text-xs text-gray-400">
             Powered by{" "}
             <a href="/" className="text-[#C8622A] hover:text-[#E07840] transition-colors">
               Cardápios Digitais

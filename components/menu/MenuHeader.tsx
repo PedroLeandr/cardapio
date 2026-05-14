@@ -1,4 +1,4 @@
-import { UtensilsCrossed, Phone, MapPin } from "lucide-react"
+import { MapPin, Phone } from "lucide-react"
 import type { Restaurant } from "@/lib/mock-data"
 import Image from "next/image"
 
@@ -7,57 +7,48 @@ interface MenuHeaderProps {
 }
 
 export function MenuHeader({ restaurant }: MenuHeaderProps) {
-  const iconClass =
-    "w-9 h-9 rounded-full bg-white/10 border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all duration-200 hover:scale-105 active:scale-95"
-
   return (
-    <header className="fixed top-0 inset-x-0 z-40 bg-black/80">
-      <div className="max-w-3xl mx-auto px-4 py-4 md:px-6 md:py-5">
-        <div className="flex items-center gap-4">
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-[0_1px_16px_rgba(0,0,0,0.05)]">
+      <div className="max-w-lg mx-auto px-5 py-4">
+        <div className="flex items-center gap-3">
+          {/* Left: profile logo */}
           <div className="flex-shrink-0">
             {restaurant.logo_url ? (
-              <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-white/20 shadow-[0_0_20px_rgba(0,0,0,0.5)]">
+              <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-gray-100 shadow-sm">
                 <Image
                   src={restaurant.logo_url}
                   alt={restaurant.name}
-                  width={56}
-                  height={56}
+                  width={40}
+                  height={40}
                   className="object-cover w-full h-full"
                 />
               </div>
             ) : (
-              <div className="w-14 h-14 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center shadow-[0_0_20px_rgba(0,0,0,0.4)]">
-                <UtensilsCrossed className="w-6 h-6 text-[#C8622A]" />
+              <div className="w-10 h-10 rounded-full bg-[#C8622A]/10 ring-2 ring-[#C8622A]/15 flex items-center justify-center">
+                <span className="font-outfit font-bold text-[#C8622A] text-sm leading-none">
+                  {restaurant.name.charAt(0).toUpperCase()}
+                </span>
               </div>
             )}
           </div>
 
-          <div className="flex-1 min-w-0">
-            <h1 className="font-playfair text-xl md:text-2xl font-bold text-white leading-tight truncate drop-shadow-[0_1px_4px_rgba(0,0,0,0.7)]">
+          {/* Center: location + name */}
+          <div className="flex-1 flex items-center justify-center gap-1.5 min-w-0">
+            <MapPin className="w-4 h-4 text-[#C8622A] flex-shrink-0" />
+            <span className="font-outfit font-semibold text-gray-900 text-[15px] truncate">
               {restaurant.name}
-            </h1>
-            {restaurant.description && (
-              <p className="font-lato text-sm text-white/65 mt-0.5 line-clamp-1 leading-relaxed">
-                {restaurant.description}
-              </p>
-            )}
+            </span>
           </div>
 
-          <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Right: phone icon */}
+          <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center">
             {restaurant.phone && (
-              <a href={`tel:${restaurant.phone}`} aria-label="Ligar" className={iconClass}>
-                <Phone className="w-4 h-4 text-white" />
-              </a>
-            )}
-            {restaurant.google_maps_url && (
               <a
-                href={restaurant.google_maps_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Ver localização"
-                className={iconClass}
+                href={`tel:${restaurant.phone}`}
+                aria-label="Ligar"
+                className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
               >
-                <MapPin className="w-4 h-4 text-white" />
+                <Phone className="w-5 h-5 text-gray-500" />
               </a>
             )}
           </div>

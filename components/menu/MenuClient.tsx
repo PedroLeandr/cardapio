@@ -1,12 +1,12 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { Search, X } from "lucide-react"
+import { Search } from "lucide-react"
 import Link from "next/link"
-import { CategoryNav } from "./CategoryNav"
 import { CategorySection } from "./CategorySection"
 import { ItemCard } from "./ItemCard"
 import { generateSlug } from "@/lib/utils"
+import { getCategoryIcon } from "@/lib/category-icons"
 import type { Category, Item } from "@/lib/mock-data"
 
 type CategoryWithItems = Category & { items: Item[] }
@@ -18,7 +18,9 @@ interface MenuClientProps {
 
 export function MenuClient({ categories, slug }: MenuClientProps) {
   const [query, setQuery] = useState("")
-  const [activeCategory, setActiveCategory] = useState<string>("all")
+  const [activeCategory, setActiveCategory] = useState<string>(
+    categories[0]?.id ?? "all"
+  )
 
   const trimmed = query.trim().toLowerCase()
   const isSearching = trimmed.length > 0
@@ -42,82 +44,106 @@ export function MenuClient({ categories, slug }: MenuClientProps) {
       : categories.filter((c) => c.id === activeCategory)
 
   return (
-    <>
-      {categories.length > 0 && (
-        <CategoryNav
-          categories={categories}
-          activeCategory={activeCategory}
-          onCategoryChange={setActiveCategory}
-        />
-      )}
-
-      {/* Espaçador para compensar header + nav fixos */}
-      <div className="h-[140px] md:h-[152px]" />
-
-      <div className="max-w-3xl mx-auto px-4 pt-4 pb-1 md:px-6">
-        <div className="relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
+    <div className="bg-white min-h-screen">
+      {/* Search bar */}
+      <div className="px-5 pt-6 pb-4">
+        <div className="relative flex items-center bg-[#F3F3F3] rounded-full h-[52px] shadow-[0_1px_6px_rgba(0,0,0,0.05)]">
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Pesquisar no cardápio..."
-            className="w-full pl-10 pr-10 py-2.5 bg-white/10 border border-white/20 rounded-xl font-lato text-sm text-white placeholder:text-white/40 focus-visible:ring-2 focus-visible:ring-[#C8622A]/50 focus-visible:border-[#C8622A]/60"
+            placeholder="Pesquisar..."
+            className="flex-1 pl-5 pr-2 bg-transparent font-outfit text-[15px] text-gray-700 placeholder:text-gray-400 focus:outline-none"
           />
-          {query && (
-            <button
-              onClick={() => setQuery("")}
-              aria-label="Limpar pesquisa"
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 text-white/50 hover:text-white transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
+          <div className="mr-1.5 w-10 h-10 rounded-full bg-[#C8622A] flex items-center justify-center shadow-[0_3px_10px_rgba(200,98,42,0.45)] flex-shrink-0">
+            <Search className="w-4 h-4 text-white" />
+          </div>
         </div>
       </div>
 
-      <main className="max-w-3xl mx-auto px-4 py-6 space-y-10 md:px-6 md:py-8 md:space-y-14">
+      {/* Categories section */}
+      {categories.length > 0 && !isSearching && (
+        <div className="pt-2 pb-1">
+          <h2 className="font-outfit font-bold text-gray-900 text-[17px] px-5 mb-3">
+            Categorias
+          </h2>
+          <div className="flex gap-2.5 overflow-x-auto scrollbar-hide px-5 pb-1">
+            {categories.map((cat) => {
+              const Icon = getCategoryIcon(cat.name)
+              const isActive = activeCategory === cat.id
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => setActiveCategory(cat.id)}
+                  className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] font-outfit font-medium transition-all duration-200 whitespace-nowrap ${
+                    isActive
+                      ? "bg-[#C8622A] text-white shadow-[0_3px_12px_rgba(200,98,42,0.35)]"
+                      : "bg-[#F0F0F0] text-gray-500 hover:bg-gray-200"
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5 flex-shrink-0" />
+                  {cat.name}
+                </button>
+              )
+            })}
+
+            <span className="flex-shrink-0 w-2" />
+          </div>
+        </div>
+      )}
+
+      {/* Main content */}
+      <main className="pb-12 pt-4">
         {isSearching ? (
           searchResults.length > 0 ? (
-            <div className="space-y-3 fade-in">
-              <p className="font-lato text-xs text-white/50">
+            <div className="px-5 space-y-3">
+              <p className="font-outfit text-xs text-gray-400">
                 {searchResults.length}{" "}
                 {searchResults.length === 1 ? "resultado" : "resultados"} para &ldquo;{query.trim()}&rdquo;
               </p>
-              {searchResults.map(({ item, categoryName }, idx) => (
-                <div key={item.id}>
-                  <p className="font-lato text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1.5">
-                    {categoryName}
-                  </p>
-                  <Link href={`/${slug}/${generateSlug(item.name)}`} className="block">
+              <div
+                className="flex gap-4 overflow-x-auto scrollbar-hide pb-4 snap-x snap-mandatory scroll-smooth"
+                style={{
+                  paddingTop: "48px",
+                  paddingLeft: "calc(50% - 9rem)",
+                  paddingRight: "calc(50% - 9rem)",
+                }}
+              >
+                {searchResults.map(({ item }, idx) => (
+                  <Link
+                    key={item.id}
+                    href={`/${slug}/${generateSlug(item.name)}`}
+                    className="block flex-shrink-0 snap-center snap-always"
+                  >
                     <ItemCard item={item} index={idx} />
                   </Link>
-                </div>
-              ))}
+                ))}
+                <span className="flex-shrink-0 w-2" />
+              </div>
             </div>
           ) : (
-            <div className="py-20 text-center fade-in">
-              <p className="font-playfair text-xl text-white/70">Sem resultados</p>
-              <p className="font-lato text-sm text-white/50 mt-2">
+            <div className="py-20 text-center">
+              <p className="font-outfit text-lg text-gray-400">Sem resultados</p>
+              <p className="font-outfit text-sm text-gray-400 mt-1">
                 Tenta outro termo de pesquisa.
               </p>
             </div>
           )
         ) : categories.length === 0 ? (
-          <div className="py-20 text-center">
-            <p className="font-playfair text-xl text-white/70">Cardápio em preparação...</p>
-            <p className="font-lato text-sm text-white/50 mt-2">
+          <div className="py-20 text-center px-5">
+            <p className="font-outfit text-lg text-gray-400">Cardápio em preparação...</p>
+            <p className="font-outfit text-sm text-gray-400 mt-1">
               Volta em breve para ver os nossos pratos.
             </p>
           </div>
         ) : (
-          <div key={activeCategory} className="space-y-10 filter-fade-in md:space-y-14">
+          <div key={activeCategory} className="space-y-10">
             {displayedCategories.map((cat) => (
               <CategorySection key={cat.id} category={cat} slug={slug} />
             ))}
           </div>
         )}
       </main>
-    </>
+    </div>
   )
 }

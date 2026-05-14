@@ -14,29 +14,38 @@ export function CategorySection({ category, slug }: CategorySectionProps) {
   const Icon = getCategoryIcon(category.name)
 
   return (
-    <section id={`section-${category.id}`} className="scroll-mt-36 md:scroll-mt-40">
-      <div className="flex items-center gap-3 mb-4 md:mb-6">
-        <div className="flex-1 h-px bg-white/15" />
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#C8622A] flex-shrink-0">
-          <Icon className="w-3.5 h-3.5 text-white flex-shrink-0" />
-          <h2 className="font-lato text-xs font-bold text-white uppercase tracking-widest">
-            {category.name}
-          </h2>
-        </div>
-        <div className="flex-1 h-px bg-white/15" />
+    <section id={`section-${category.id}`}>
+      {/* Category title */}
+      <div className="flex items-center gap-2 px-5 mb-2">
+        <h2 className="font-outfit font-bold text-gray-900 text-[17px]">
+          {category.name}
+        </h2>
+        <Icon className="w-4 h-4 text-[#C8622A]" />
       </div>
 
       {hasItems ? (
-        <div className="grid grid-cols-1 gap-3">
+        <div
+          className="flex gap-4 overflow-x-auto scrollbar-hide pb-4 snap-x snap-mandatory scroll-smooth"
+          style={{
+            paddingTop: "48px",
+            paddingLeft: "calc(50% - 9rem)",
+            paddingRight: "calc(50% - 9rem)",
+          }}
+        >
           {category.items.map((item, idx) => (
-            <Link key={item.id} href={`/${slug}/${generateSlug(item.name)}`} className="block">
+            <Link
+              key={item.id}
+              href={`/${slug}/${generateSlug(item.name)}`}
+              className="block flex-shrink-0 snap-center snap-always"
+            >
               <ItemCard item={item} index={idx} />
             </Link>
           ))}
+          <span className="flex-shrink-0 w-2" />
         </div>
       ) : (
-        <div className="py-12 text-center">
-          <p className="font-lato text-white/50 text-sm">
+        <div className="py-10 text-center px-5">
+          <p className="font-outfit text-gray-400 text-sm">
             Sem itens nesta categoria de momento.
           </p>
         </div>

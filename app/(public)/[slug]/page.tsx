@@ -68,7 +68,7 @@ export default async function MenuPage({ params }: Props) {
   const activeCategoriesWithItems = categories.filter((cat) => cat.items.length > 0)
 
   return (
-    <div className="flex flex-col bg-white">
+    <div className="min-h-dvh flex flex-col bg-white">
       <MenuHeader restaurant={restaurant} />
       <div className="flex-1">
         <MenuClient categories={activeCategoriesWithItems} slug={params.slug} />

@@ -1,6 +1,6 @@
 import { UtensilsCrossed, ChevronRight } from "lucide-react"
-import Image from "next/image"
 import { formatPrice } from "@/lib/utils"
+import { SkeletonImage } from "./SkeletonImage"
 import type { Item } from "@/lib/mock-data"
 
 interface ItemCardProps {
@@ -14,14 +14,14 @@ export function ItemCard({ item }: ItemCardProps) {
   return (
     <div className="relative w-72 flex-shrink-0">
       {/* Floating circular image */}
-      <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-10 w-40 h-40 rounded-full overflow-hidden ring-[3px] ring-white shadow-[0_8px_28px_rgba(0,0,0,0.22)]">
+      <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-10 w-40 h-40 rounded-full overflow-hidden ring-[3px] ring-white shadow-[0_8px_28px_rgba(0,0,0,0.22)] bg-white">
         {item.image_url ? (
-          <Image
+          <SkeletonImage
             src={item.image_url}
             alt={item.name}
             width={160}
             height={160}
-            className={`w-full h-full object-cover transition-all ${isSoldOut ? "grayscale opacity-60" : ""}`}
+            className={`w-full h-full object-cover ${isSoldOut ? "grayscale opacity-60" : ""}`}
           />
         ) : (
           <div

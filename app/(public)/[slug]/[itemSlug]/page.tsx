@@ -6,6 +6,7 @@ import { ArrowLeft, X, UtensilsCrossed } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { generateSlug, formatPrice } from "@/lib/utils"
 import { MenuHeader } from "@/components/menu/MenuHeader"
+import { ImageLightbox } from "@/components/menu/ImageLightbox"
 
 interface Props {
   params: { slug: string; itemSlug: string }
@@ -84,15 +85,9 @@ export default async function ItemDetailPage({ params }: Props) {
       <main className="flex-1 max-w-lg mx-auto w-full px-5 pb-4 flex flex-col">
         {/* Imagem flutuante */}
         <div className="flex justify-center relative z-10 mb-[-6.5rem]">
-          <div className="w-52 h-52 rounded-full overflow-hidden ring-4 ring-white shadow-[0_16px_48px_rgba(0,0,0,0.16),0_4px_12px_rgba(0,0,0,0.08)]">
+          <div className="w-52 h-52 rounded-full overflow-hidden ring-4 ring-white shadow-[0_16px_48px_rgba(0,0,0,0.16),0_4px_12px_rgba(0,0,0,0.08)] bg-white">
             {item.image_url ? (
-              <Image
-                src={item.image_url}
-                alt={item.name}
-                width={208}
-                height={208}
-                className={`w-full h-full object-cover ${isSoldOut ? "grayscale opacity-70" : ""}`}
-              />
+              <ImageLightbox src={item.image_url} alt={item.name} isSoldOut={isSoldOut} />
             ) : (
               <div className="w-full h-full bg-gray-50 flex items-center justify-center">
                 <UtensilsCrossed className="w-16 h-16 text-gray-200" />

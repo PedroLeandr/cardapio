@@ -25,7 +25,7 @@ export function CategorySection({ category, slug }: CategorySectionProps) {
 
       {hasItems ? (
         <div
-          className="flex gap-4 overflow-x-auto scrollbar-hide pb-4 snap-x snap-mandatory scroll-smooth"
+          className="flex gap-4 overflow-x-auto scrollbar-hide pb-6 snap-x snap-mandatory scroll-smooth"
           style={{
             paddingTop: "48px",
             paddingLeft: "calc(50% - 9rem)",

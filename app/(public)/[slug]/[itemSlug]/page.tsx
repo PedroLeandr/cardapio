@@ -2,30 +2,25 @@ import { notFound } from "next/navigation"
 import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
-import { X, UtensilsCrossed } from "lucide-react"
+import { ArrowLeft, X, UtensilsCrossed } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { generateSlug, formatPrice } from "@/lib/utils"
+import { MenuHeader } from "@/components/menu/MenuHeader"
 
 interface Props {
   params: { slug: string; itemSlug: string }
 }
 
 async function getItem(slug: string, itemSlug: string) {
-  let allItems: { id: string; name: string; description: string | null; price: number; image_url: string | null; is_active: boolean; category_id: string }[] = []
-  let restaurantName = ""
-  let logoUrl: string | null = null
-
   const supabase = await createClient()
 
   const { data: restaurant } = await supabase
     .from("restaurants")
-    .select("id, name, logo_url")
+    .select("*")
     .eq("slug", slug)
     .single()
 
   if (!restaurant) return null
-  restaurantName = restaurant.name
-  logoUrl = restaurant.logo_url ?? null
 
   const { data: categories } = await supabase
     .from("categories")
@@ -39,19 +34,17 @@ async function getItem(slug: string, itemSlug: string) {
     .select("*")
     .in("category_id", categories.map((c) => c.id))
 
-  allItems = items ?? []
-
-  const item = allItems.find((i) => generateSlug(i.name) === itemSlug)
+  const item = (items ?? []).find((i) => generateSlug(i.name) === itemSlug)
   if (!item) return null
 
-  return { item, restaurantName, logoUrl }
+  return { item, restaurant }
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const result = await getItem(params.slug, params.itemSlug)
   if (!result) return { title: "Item não encontrado" }
   return {
-    title: `${result.item.name} — ${result.restaurantName}`,
+    title: `${result.item.name} — ${result.restaurant.name}`,
     description: result.item.description ?? undefined,
     openGraph: {
       images: result.item.image_url ? [result.item.image_url] : [],
@@ -63,116 +56,118 @@ export default async function ItemDetailPage({ params }: Props) {
   const result = await getItem(params.slug, params.itemSlug)
   if (!result) notFound()
 
-  const { item, restaurantName, logoUrl } = result
+  const { item, restaurant } = result
   const isSoldOut = !item.is_active
 
-  const bgUrl = "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200&q=80"
-
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Fundo igual ao /[slug] */}
-      <div
-        className="fixed top-0 inset-x-0 -z-10 bg-cover bg-center"
-        style={{ backgroundImage: `url('${bgUrl}')`, height: "100lvh" }}
-      />
-      <div
-        className="fixed top-0 inset-x-0 -z-10 bg-black/65"
-        style={{ height: "100lvh" }}
-      />
+    <div className="min-h-dvh bg-white flex flex-col">
+      <MenuHeader restaurant={restaurant} />
 
-      {/* Header — igual ao MenuHeader */}
-      <header className="sticky top-0 z-40 bg-black/80">
-        <div className="max-w-2xl mx-auto px-4 py-4 md:px-6 flex items-center gap-4">
-          <div className="flex-shrink-0">
-            {logoUrl ? (
-              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white/20 shadow-[0_0_20px_rgba(0,0,0,0.5)]">
-                <Image src={logoUrl} alt={restaurantName} width={40} height={40} className="object-cover w-full h-full" />
-              </div>
-            ) : (
-              <div className="w-10 h-10 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center">
-                <UtensilsCrossed className="w-5 h-5 text-[#C8622A]" />
-              </div>
-            )}
-          </div>
+      {/* Botões */}
+      <div className="max-w-lg mx-auto w-full px-5 pt-4 pb-2 flex items-center justify-between">
+        <Link
+          href={`/${params.slug}`}
+          aria-label="Voltar"
+          className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors active:scale-95"
+        >
+          <ArrowLeft className="w-5 h-5 text-gray-700" strokeWidth={1.75} />
+        </Link>
+        <Link
+          href={`/${params.slug}`}
+          aria-label="Fechar"
+          className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors active:scale-95"
+        >
+          <X className="w-5 h-5 text-gray-700" strokeWidth={1.75} />
+        </Link>
+      </div>
 
-          <Link
-            href={`/${params.slug}`}
-            className="flex-1 min-w-0 font-playfair text-lg font-bold text-white leading-tight truncate drop-shadow-[0_1px_4px_rgba(0,0,0,0.7)] hover:text-white/80 transition-colors"
-          >
-            {restaurantName}
-          </Link>
-
-          <Link
-            href={`/${params.slug}`}
-            className="w-9 h-9 rounded-full bg-white/10 border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all duration-200 hover:scale-105 active:scale-95 flex-shrink-0"
-            aria-label="Voltar ao cardápio"
-          >
-            <X className="w-4 h-4 text-white" />
-          </Link>
-        </div>
-      </header>
-
-      <main className="flex-1 max-w-2xl mx-auto w-full px-4 md:px-6">
-        {/* Imagem circular sobre banda laranja — igual ao ItemCard mas centrado */}
-        <div className="relative flex justify-center items-center py-10 mt-6">
-          {/* Banda laranja horizontal */}
-          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-44 bg-[#C8622A]" />
-
-          {/* Círculo da imagem */}
-          <div className="relative z-10 w-48 h-48 md:w-56 md:h-56 rounded-full overflow-hidden bg-[#2a2a2a] ring-4 ring-white shadow-[0_8px_40px_rgba(0,0,0,0.5)]">
+      <main className="flex-1 max-w-lg mx-auto w-full px-5 pb-4 flex flex-col">
+        {/* Imagem flutuante */}
+        <div className="flex justify-center relative z-10 mb-[-6.5rem]">
+          <div className="w-52 h-52 rounded-full overflow-hidden ring-4 ring-white shadow-[0_16px_48px_rgba(0,0,0,0.16),0_4px_12px_rgba(0,0,0,0.08)]">
             {item.image_url ? (
               <Image
                 src={item.image_url}
                 alt={item.name}
-                width={224}
-                height={224}
-                className="w-full h-full object-cover"
+                width={208}
+                height={208}
+                className={`w-full h-full object-cover ${isSoldOut ? "grayscale opacity-70" : ""}`}
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <UtensilsCrossed className="w-16 h-16 text-white/20" />
-              </div>
-            )}
-            {isSoldOut && (
-              <div className="absolute inset-0 bg-black/55 flex items-center justify-center">
-                <span className="text-white text-[11px] font-outfit font-bold uppercase tracking-[0.18em] text-center leading-tight px-3">
-                  Esgotado
-                </span>
+              <div className="w-full h-full bg-gray-50 flex items-center justify-center">
+                <UtensilsCrossed className="w-16 h-16 text-gray-200" />
               </div>
             )}
           </div>
         </div>
 
-        {/* Conteúdo de texto */}
-        <div className="text-center mt-6 pb-16 px-2">
-          {isSoldOut && (
-            <span className="inline-block text-[10px] px-3 py-1 rounded-full bg-red-500 text-white font-outfit font-bold tracking-widest uppercase mb-4">
-              Esgotado
-            </span>
-          )}
+        {/* Main card */}
+        <div
+          className="rounded-[36px] shadow-[0_6px_32px_rgba(0,0,0,0.15)] pt-36 px-6 pb-7 overflow-hidden relative flex flex-col flex-1"
+          style={{ background: "linear-gradient(155deg, #D4703A 0%, #6B2A0A 100%)" }}
+        >
+          {/* Background texture */}
+          <div
+            className="absolute inset-0 bg-center bg-cover pointer-events-none"
+            style={{
+              backgroundImage: "url('/fundo-sem-fundo.png')",
+              opacity: 0.20,
+              filter: "brightness(0) invert(1)",
+            }}
+          />
 
-          <h1 className="font-cormorant italic font-bold text-4xl md:text-5xl text-white leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] mb-3">
-            {item.name}
-          </h1>
+          <div className="relative flex flex-col flex-1">
+            {/* Name */}
+            <div className="mb-6">
+              <h1 className="font-outfit font-bold text-white text-[26px] leading-tight drop-shadow-[0_1px_4px_rgba(0,0,0,0.3)]">
+                {item.name}
+              </h1>
+            </div>
 
-          <p className={`font-outfit font-bold text-2xl md:text-3xl mb-4 ${isSoldOut ? "line-through text-white/40" : "text-[#C8622A]"}`}>
-            {formatPrice(item.price)}
-          </p>
+            {/* About / Description — flex-1 pushes bottom section down */}
+            <div className="flex-1">
+              {item.description && (
+                <div>
+                  <h3 className="font-outfit font-bold text-white text-[16px] mb-2 drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
+                    Sobre
+                  </h3>
+                  <p className="font-outfit text-[15px] text-white leading-relaxed drop-shadow-[0_1px_3px_rgba(0,0,0,0.25)]">
+                    {item.description}
+                  </p>
+                </div>
+              )}
+            </div>
 
-          {item.description && (
-            <>
-              <div className="flex items-center gap-3 justify-center mb-4">
-                <div className="h-px w-12 bg-white/20" />
-                <div className="w-1 h-1 rounded-full bg-[#C8622A]/60" />
-                <div className="h-px w-12 bg-white/20" />
-              </div>
-              <p className="font-outfit text-base text-white/70 leading-relaxed max-w-md mx-auto">
-                {item.description}
+            {/* Divider */}
+            <div className="h-px bg-white/25 mt-6 mb-6" />
+
+            {/* Price + availability — pinned to bottom */}
+            <div className="flex items-center justify-between">
+              <p
+                className={`font-outfit font-bold text-[30px] leading-none drop-shadow-[0_1px_4px_rgba(0,0,0,0.3)] ${
+                  isSoldOut ? "line-through text-white/40" : "text-white"
+                }`}
+              >
+                {formatPrice(item.price)}
               </p>
-            </>
-          )}
+              <span className={`px-4 py-1.5 rounded-full font-outfit font-semibold text-[13px] ${
+                isSoldOut ? "bg-black/20 text-white/50" : "bg-black/20 text-white"
+              }`}>
+                {isSoldOut ? "Esgotado" : "Disponível"}
+              </span>
+            </div>
+          </div>
         </div>
       </main>
+
+      <footer className="py-3 text-center">
+        <p className="font-outfit text-xs text-gray-400">
+          Powered by{" "}
+          <a href="/" className="text-[#C8622A] hover:text-[#E07840] transition-colors">
+            Cardápios Digitais
+          </a>
+        </p>
+      </footer>
     </div>
   )
 }

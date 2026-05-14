@@ -68,13 +68,13 @@ export default async function MenuPage({ params }: Props) {
   const activeCategoriesWithItems = categories.filter((cat) => cat.items.length > 0)
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="flex flex-col bg-white">
       <MenuHeader restaurant={restaurant} />
       <div className="flex-1">
         <MenuClient categories={activeCategoriesWithItems} slug={params.slug} />
       </div>
 
-      <footer className="py-6 border-t border-gray-100">
+      <footer className="py-5 border-t border-gray-100">
         <div className="max-w-lg mx-auto px-5 text-center">
           <p className="font-outfit text-xs text-gray-400">
             Powered by{" "}

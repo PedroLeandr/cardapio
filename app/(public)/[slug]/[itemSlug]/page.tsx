@@ -6,7 +6,6 @@ import { ArrowLeft, X, UtensilsCrossed } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { generateSlug, formatPrice } from "@/lib/utils"
 import { MenuHeader } from "@/components/menu/MenuHeader"
-import { ImageLightbox } from "@/components/menu/ImageLightbox"
 
 interface Props {
   params: { slug: string; itemSlug: string }
@@ -83,22 +82,9 @@ export default async function ItemDetailPage({ params }: Props) {
       </div>
 
       <main className="flex-1 max-w-lg mx-auto w-full px-5 pb-4 flex flex-col">
-        {/* Imagem flutuante */}
-        <div className="flex justify-center relative z-10 mb-[-6.5rem]">
-          <div className="w-52 h-52 rounded-full overflow-hidden ring-4 ring-white shadow-[0_16px_48px_rgba(0,0,0,0.16),0_4px_12px_rgba(0,0,0,0.08)] bg-white">
-            {item.image_url ? (
-              <ImageLightbox src={item.image_url} alt={item.name} isSoldOut={isSoldOut} />
-            ) : (
-              <div className="w-full h-full bg-gray-50 flex items-center justify-center">
-                <UtensilsCrossed className="w-16 h-16 text-gray-200" />
-              </div>
-            )}
-          </div>
-        </div>
-
         {/* Main card */}
         <div
-          className="rounded-[36px] shadow-[0_6px_32px_rgba(0,0,0,0.15)] pt-36 px-6 pb-7 overflow-hidden relative flex flex-col flex-1"
+          className="rounded-[36px] shadow-[0_6px_32px_rgba(0,0,0,0.15)] overflow-hidden relative flex flex-col flex-1"
           style={{ background: "linear-gradient(155deg, #D4703A 0%, #6B2A0A 100%)" }}
         >
           {/* Background texture */}
@@ -111,7 +97,24 @@ export default async function ItemDetailPage({ params }: Props) {
             }}
           />
 
-          <div className="relative flex flex-col flex-1">
+          {/* Imagem */}
+          {item.image_url ? (
+            <div className="relative w-full h-52 shrink-0 bg-white">
+              <Image
+                src={item.image_url}
+                alt={item.name}
+                fill
+                className={`object-cover${isSoldOut ? " opacity-40 grayscale" : ""}`}
+              />
+              <div className="absolute inset-0 border-b-4 border-white pointer-events-none" />
+            </div>
+          ) : (
+            <div className="w-full h-52 shrink-0 bg-black/10 flex items-center justify-center">
+              <UtensilsCrossed className="w-16 h-16 text-white/30" />
+            </div>
+          )}
+
+          <div className="relative flex flex-col flex-1 px-6 pt-6 pb-7">
             {/* Name */}
             <div className="mb-6">
               <h1 className="font-outfit font-bold text-white text-[26px] leading-tight drop-shadow-[0_1px_4px_rgba(0,0,0,0.3)]">

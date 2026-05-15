@@ -2,13 +2,28 @@
 
 import { useEffect, useState } from "react"
 import Image from "next/image"
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core"
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
 import { DashboardShell } from "@/components/dashboard/DashboardShell"
 import { ItemForm } from "@/components/dashboard/ItemForm"
 import { Button } from "@/components/ui/button"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog"
-import { Plus, Pencil, Trash2, UtensilsCrossed, CheckCircle2, XCircle } from "lucide-react"
+import { Plus, Pencil, Trash2, UtensilsCrossed, CheckCircle2, XCircle, GripVertical } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { formatPrice } from "@/lib/utils"
 import { UpgradeBanner } from "@/components/dashboard/UpgradeBanner"
@@ -16,6 +31,77 @@ import toast from "react-hot-toast"
 import type { Category, Item } from "@/lib/mock-data"
 
 const FREE_ITEMS_LIMIT = 10
+
+function SortableItem({
+  item,
+  idx,
+  onEdit,
+  onDelete,
+  onToggle,
+}: {
+  item: Item
+  idx: number
+  onEdit: (item: Item) => void
+  onDelete: (item: Item) => void
+  onToggle: (item: Item) => void
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id })
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={`flex items-center gap-4 px-5 py-3.5 transition-colors ${idx !== 0 ? "border-t border-[#F2EFE9]" : ""} ${isDragging ? "opacity-75 z-10 relative bg-[#FAF8F4]" : item.is_active ? "hover:bg-[#FAF8F4]" : "bg-red-50/40 hover:bg-red-50/60"}`}
+    >
+      <button
+        {...attributes}
+        {...listeners}
+        className="cursor-grab active:cursor-grabbing p-1 rounded text-[#C8B9A8] hover:text-[#A89880] transition touch-none flex-shrink-0"
+        aria-label="Arrastar"
+      >
+        <GripVertical className="w-4 h-4" />
+      </button>
+
+      <div className={`w-12 h-12 rounded-lg overflow-hidden bg-[#F2EFE9] flex-shrink-0 ${!item.is_active ? "opacity-50 grayscale" : ""}`}>
+        {item.image_url ? (
+          <Image src={item.image_url} alt={item.name} width={48} height={48} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <UtensilsCrossed className="w-5 h-5 text-[#A89880]" />
+          </div>
+        )}
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <p className={`font-dm-sans font-medium text-sm truncate ${item.is_active ? "text-[#1A1510]" : "text-[#1A1510]/40"}`}>{item.name}</p>
+        <p className={`font-dm-sans text-sm font-semibold mt-0.5 ${item.is_active ? "text-[#C8622A]" : "text-[#C8622A]/40"}`}>{formatPrice(item.price)}</p>
+      </div>
+
+      <button
+        onClick={() => onToggle(item)}
+        className={`p-1.5 rounded-full transition-all duration-200 flex-shrink-0 ${
+          item.is_active
+            ? "text-emerald-600 hover:bg-emerald-100"
+            : "text-red-500 hover:bg-red-100"
+        }`}
+      >
+        {item.is_active
+          ? <CheckCircle2 className="w-5 h-5" />
+          : <XCircle className="w-5 h-5" />
+        }
+      </button>
+
+      <div className="flex items-center gap-1">
+        <button onClick={() => onEdit(item)} className="p-2 rounded-lg text-[#A89880] hover:text-[#1A1510] hover:bg-[#F2EFE9] transition">
+          <Pencil className="w-4 h-4" />
+        </button>
+        <button onClick={() => onDelete(item)} className="p-2 rounded-lg text-[#A89880] hover:text-red-600 hover:bg-red-50 transition">
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  )
+}
 
 export default function ItemsPage() {
   const [categories, setCategories] = useState<Category[]>([])
@@ -26,6 +112,8 @@ export default function ItemsPage() {
   const [formOpen, setFormOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<Item | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Item | null>(null)
+
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
   const fetchData = async () => {
     const supabase = createClient()
@@ -60,6 +148,28 @@ export default function ItemsPage() {
   }
 
   useEffect(() => { fetchData() }, [])
+
+  const handleDragEnd = async (categoryId: string, event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const categoryItems = items.filter((i) => i.category_id === categoryId).sort((a, b) => a.position - b.position)
+    const oldIndex = categoryItems.findIndex((i) => i.id === active.id)
+    const newIndex = categoryItems.findIndex((i) => i.id === over.id)
+    const reordered = arrayMove(categoryItems, oldIndex, newIndex)
+
+    setItems((prev) => [
+      ...prev.filter((i) => i.category_id !== categoryId),
+      ...reordered.map((item, idx) => ({ ...item, position: idx })),
+    ])
+
+    const supabase = createClient()
+    await Promise.all(
+      reordered.map((item, idx) =>
+        supabase.from("items").update({ position: idx }).eq("id", item.id)
+      )
+    )
+  }
 
   const handleDelete = async () => {
     if (!deleteTarget) return
@@ -138,50 +248,24 @@ export default function ItemsPage() {
           <div key={cat.id}>
             <h2 className="font-dm-sans font-semibold text-sm text-[#A89880] uppercase tracking-wide mb-3">{cat.name}</h2>
             <div className="bg-white rounded-xl border border-[#E8E0D5] overflow-hidden">
-              {cat.items.map((item, idx) => (
-                <div
-                  key={item.id}
-                  className={`flex items-center gap-4 px-5 py-3.5 transition-colors ${idx !== 0 ? "border-t border-[#F2EFE9]" : ""} ${item.is_active ? "hover:bg-[#FAF8F4]" : "bg-red-50/40 hover:bg-red-50/60"}`}
-                >
-                  <div className={`w-12 h-12 rounded-lg overflow-hidden bg-[#F2EFE9] flex-shrink-0 ${!item.is_active ? "opacity-50 grayscale" : ""}`}>
-                    {item.image_url ? (
-                      <Image src={item.image_url} alt={item.name} width={48} height={48} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <UtensilsCrossed className="w-5 h-5 text-[#A89880]" />
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <p className={`font-dm-sans font-medium text-sm truncate ${item.is_active ? "text-[#1A1510]" : "text-[#1A1510]/40"}`}>{item.name}</p>
-                    <p className={`font-dm-sans text-sm font-semibold mt-0.5 ${item.is_active ? "text-[#C8622A]" : "text-[#C8622A]/40"}`}>{formatPrice(item.price)}</p>
-                  </div>
-
-                  <button
-                    onClick={() => toggleActive(item)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-dm-sans font-semibold transition-all duration-200 flex-shrink-0 ${
-                      item.is_active
-                        ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-500 hover:text-white"
-                        : "bg-red-100 text-red-600 hover:bg-red-500 hover:text-white"
-                    }`}
-                  >
-                    {item.is_active
-                      ? <><CheckCircle2 className="w-3.5 h-3.5" />Disponível</>
-                      : <><XCircle className="w-3.5 h-3.5" />Esgotado</>
-                    }
-                  </button>
-
-                  <div className="flex items-center gap-1">
-                    <button onClick={() => { setEditingItem(item); setFormOpen(true) }} className="p-2 rounded-lg text-[#A89880] hover:text-[#1A1510] hover:bg-[#F2EFE9] transition">
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => setDeleteTarget(item)} className="p-2 rounded-lg text-[#A89880] hover:text-red-600 hover:bg-red-50 transition">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={(e) => handleDragEnd(cat.id, e)}
+              >
+                <SortableContext items={cat.items.map((i) => i.id)} strategy={verticalListSortingStrategy}>
+                  {cat.items.map((item, idx) => (
+                    <SortableItem
+                      key={item.id}
+                      item={item}
+                      idx={idx}
+                      onEdit={(i) => { setEditingItem(i); setFormOpen(true) }}
+                      onDelete={setDeleteTarget}
+                      onToggle={toggleActive}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
             </div>
           </div>
         ))}

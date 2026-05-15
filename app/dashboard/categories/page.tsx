@@ -1,19 +1,83 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core"
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
 import { DashboardShell } from "@/components/dashboard/DashboardShell"
 import { CategoryForm } from "@/components/dashboard/CategoryForm"
 import { Button } from "@/components/ui/button"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog"
-import { Plus, Pencil, Trash2, ChevronUp, ChevronDown, FolderOpen } from "lucide-react"
+import { Plus, Pencil, Trash2, FolderOpen, GripVertical } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { UpgradeBanner } from "@/components/dashboard/UpgradeBanner"
 import toast from "react-hot-toast"
 import type { Category } from "@/lib/mock-data"
 
 const FREE_CATEGORIES_LIMIT = 3
+
+function SortableCategory({
+  cat,
+  idx,
+  onEdit,
+  onDelete,
+}: {
+  cat: Category
+  idx: number
+  onEdit: (cat: Category) => void
+  onDelete: (cat: Category) => void
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: cat.id })
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={`flex items-center gap-4 px-5 py-4 transition-colors ${idx !== 0 ? "border-t border-[#F2EFE9]" : ""} ${isDragging ? "bg-[#FAF8F4] opacity-75 z-10 relative" : "hover:bg-[#FAF8F4]"}`}
+    >
+      <button
+        {...attributes}
+        {...listeners}
+        className="cursor-grab active:cursor-grabbing p-1 rounded text-[#C8B9A8] hover:text-[#A89880] transition touch-none"
+        aria-label="Arrastar"
+      >
+        <GripVertical className="w-4 h-4" />
+      </button>
+
+
+      <div className="w-9 h-9 rounded-lg bg-[#F5E6DC] flex items-center justify-center flex-shrink-0">
+        <FolderOpen className="w-4 h-4 text-[#C8622A]" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="font-dm-sans font-medium text-[#1A1510] truncate">{cat.name}</p>
+        <p className="font-dm-sans text-xs text-[#A89880]">Posição #{idx + 1}</p>
+      </div>
+
+      <div className="flex items-center gap-1">
+        <button onClick={() => onEdit(cat)} className="p-2 rounded-lg text-[#A89880] hover:text-[#1A1510] hover:bg-[#F2EFE9] transition">
+          <Pencil className="w-4 h-4" />
+        </button>
+        <button onClick={() => onDelete(cat)} className="p-2 rounded-lg text-[#A89880] hover:text-red-600 hover:bg-red-50 transition">
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  )
+}
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([])
@@ -23,6 +87,8 @@ export default function CategoriesPage() {
   const [formOpen, setFormOpen] = useState(false)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null)
+
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
   const fetchCategories = async () => {
     const supabase = createClient()
@@ -51,6 +117,24 @@ export default function CategoriesPage() {
 
   useEffect(() => { fetchCategories() }, [])
 
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const oldIndex = categories.findIndex((c) => c.id === active.id)
+    const newIndex = categories.findIndex((c) => c.id === over.id)
+    const reordered = arrayMove(categories, oldIndex, newIndex)
+
+    setCategories(reordered)
+
+    const supabase = createClient()
+    await Promise.all(
+      reordered.map((cat, idx) =>
+        supabase.from("categories").update({ position: idx }).eq("id", cat.id)
+      )
+    )
+  }
+
   const handleDelete = async () => {
     if (!deleteTarget) return
     const supabase = createClient()
@@ -58,22 +142,6 @@ export default function CategoriesPage() {
     if (error) { toast.error("Erro ao eliminar categoria."); return }
     toast.success("Categoria eliminada.")
     setDeleteTarget(null)
-    fetchCategories()
-  }
-
-  const move = async (id: string, direction: "up" | "down") => {
-    const idx = categories.findIndex((c) => c.id === id)
-    const swapIdx = direction === "up" ? idx - 1 : idx + 1
-    if (swapIdx < 0 || swapIdx >= categories.length) return
-
-    const supabase = createClient()
-    const a = categories[idx]
-    const b = categories[swapIdx]
-
-    await Promise.all([
-      supabase.from("categories").update({ position: b.position }).eq("id", a.id),
-      supabase.from("categories").update({ position: a.position }).eq("id", b.id),
-    ])
     fetchCategories()
   }
 
@@ -126,38 +194,19 @@ export default function CategoriesPage() {
         </div>
       ) : (
         <div className="bg-white rounded-xl border border-[#E8E0D5] overflow-hidden">
-          {categories.map((cat, idx) => (
-            <div
-              key={cat.id}
-              className={`flex items-center gap-4 px-5 py-4 hover:bg-[#FAF8F4] transition-colors ${idx !== 0 ? "border-t border-[#F2EFE9]" : ""}`}
-            >
-              <div className="flex flex-col gap-0.5">
-                <button onClick={() => move(cat.id, "up")} disabled={idx === 0} className="p-1 rounded text-[#A89880] hover:text-[#1A1510] disabled:opacity-25 transition">
-                  <ChevronUp className="w-3.5 h-3.5" />
-                </button>
-                <button onClick={() => move(cat.id, "down")} disabled={idx === categories.length - 1} className="p-1 rounded text-[#A89880] hover:text-[#1A1510] disabled:opacity-25 transition">
-                  <ChevronDown className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              <div className="w-9 h-9 rounded-lg bg-[#F5E6DC] flex items-center justify-center flex-shrink-0">
-                <FolderOpen className="w-4 h-4 text-[#C8622A]" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-dm-sans font-medium text-[#1A1510] truncate">{cat.name}</p>
-                <p className="font-dm-sans text-xs text-[#A89880]">Posição #{idx + 1}</p>
-              </div>
-
-              <div className="flex items-center gap-1">
-                <button onClick={() => { setEditingCategory(cat); setFormOpen(true) }} className="p-2 rounded-lg text-[#A89880] hover:text-[#1A1510] hover:bg-[#F2EFE9] transition">
-                  <Pencil className="w-4 h-4" />
-                </button>
-                <button onClick={() => setDeleteTarget(cat)} className="p-2 rounded-lg text-[#A89880] hover:text-red-600 hover:bg-red-50 transition">
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          ))}
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={categories.map((c) => c.id)} strategy={verticalListSortingStrategy}>
+              {categories.map((cat, idx) => (
+                <SortableCategory
+                  key={cat.id}
+                  cat={cat}
+                  idx={idx}
+                  onEdit={(c) => { setEditingCategory(c); setFormOpen(true) }}
+                  onDelete={setDeleteTarget}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
         </div>
       )}
 

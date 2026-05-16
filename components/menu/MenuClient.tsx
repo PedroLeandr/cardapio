@@ -14,9 +14,10 @@ type CategoryWithItems = Category & { items: Item[] }
 interface MenuClientProps {
   categories: CategoryWithItems[]
   slug: string
+  linkBase?: string
 }
 
-export function MenuClient({ categories, slug }: MenuClientProps) {
+export function MenuClient({ categories, slug, linkBase }: MenuClientProps) {
   const [query, setQuery] = useState("")
   const [activeCategory, setActiveCategory] = useState<string>(
     categories[0]?.id ?? "all"
@@ -55,7 +56,7 @@ export function MenuClient({ categories, slug }: MenuClientProps) {
             placeholder="Pesquisar..."
             className="flex-1 pl-5 pr-2 bg-transparent font-outfit text-[15px] text-gray-700 placeholder:text-gray-400 focus:outline-none"
           />
-          <div className="mr-1.5 w-10 h-10 rounded-full bg-[#C8622A] flex items-center justify-center shadow-[0_3px_10px_rgba(200,98,42,0.45)] flex-shrink-0">
+          <div className="mr-1.5 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: "var(--accent)", boxShadow: "0 3px 10px color-mix(in srgb, var(--accent) 45%, transparent)" }}>
             <Search className="w-4 h-4 text-white" />
           </div>
         </div>
@@ -77,9 +78,10 @@ export function MenuClient({ categories, slug }: MenuClientProps) {
                   onClick={() => setActiveCategory(cat.id)}
                   className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] font-outfit font-medium transition-all duration-200 whitespace-nowrap ${
                     isActive
-                      ? "bg-[#C8622A] text-white"
+                      ? "text-white"
                       : "bg-[#F0F0F0] text-gray-500 hover:bg-gray-200"
                   }`}
+                  style={isActive ? { background: "var(--accent)" } : {}}
                 >
                   <Icon className="w-3.5 h-3.5 flex-shrink-0" />
                   {cat.name}
@@ -112,7 +114,7 @@ export function MenuClient({ categories, slug }: MenuClientProps) {
                 {searchResults.map(({ item }, idx) => (
                   <Link
                     key={item.id}
-                    href={`/${slug}/${generateSlug(item.name)}`}
+                    href={`${linkBase ?? `/${slug}`}/${generateSlug(item.name)}`}
                     className="block flex-shrink-0 snap-center snap-always"
                   >
                     <ItemCard item={item} index={idx} />
@@ -139,7 +141,7 @@ export function MenuClient({ categories, slug }: MenuClientProps) {
         ) : (
           <div key={activeCategory} className="space-y-10">
             {displayedCategories.map((cat) => (
-              <CategorySection key={cat.id} category={cat} slug={slug} />
+              <CategorySection key={cat.id} category={cat} slug={slug} linkBase={linkBase} />
             ))}
           </div>
         )}

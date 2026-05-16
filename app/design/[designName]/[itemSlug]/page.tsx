@@ -1,8 +1,7 @@
-import { notFound } from "next/navigation"
-import type { Metadata } from "next"
+import { redirect, notFound } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
-import { ArrowLeft, X, UtensilsCrossed } from "lucide-react"
+import { ArrowLeft, X, UtensilsCrossed, Sparkles } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { generateSlug, formatPrice } from "@/lib/utils"
 import { MenuHeader } from "@/components/menu/MenuHeader"
@@ -11,63 +10,73 @@ import { MenuHeader as BrasserieMenuHeader } from "@/components/menu/brasserie/M
 import { MenuHeader as NoiteMenuHeader } from "@/components/menu/noite/MenuHeader"
 import { MenuHeader as VibranteMenuHeader } from "@/components/menu/vibrante/MenuHeader"
 
-interface Props {
-  params: { slug: string; itemSlug: string }
+const THEME_NAMES: Record<string, string> = {
+  modern: "Moderno",
+  classic: "Clássico",
+  brasserie: "Brasserie",
+  noite: "Noite",
+  vibrante: "Vibrante",
 }
 
-async function getItem(slug: string, itemSlug: string) {
+interface Props {
+  params: { designName: string; itemSlug: string }
+}
+
+export default async function DesignItemPreviewPage({ params }: Props) {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect("/login")
 
   const { data: restaurant } = await supabase
     .from("restaurants")
     .select("*")
-    .eq("slug", slug)
+    .eq("user_id", user.id)
     .single()
 
-  if (!restaurant) return null
+  if (!restaurant) redirect("/dashboard")
 
   const { data: categories } = await supabase
     .from("categories")
     .select("id")
     .eq("restaurant_id", restaurant.id)
 
-  if (!categories?.length) return null
-
   const { data: items } = await supabase
     .from("items")
     .select("*")
-    .in("category_id", categories.map((c) => c.id))
+    .in("category_id", (categories ?? []).map((c) => c.id))
 
-  const item = (items ?? []).find((i) => generateSlug(i.name) === itemSlug)
-  if (!item) return null
+  const item = (items ?? []).find((i) => generateSlug(i.name) === params.itemSlug)
+  if (!item) notFound()
 
-  return { item, restaurant }
-}
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const result = await getItem(params.slug, params.itemSlug)
-  if (!result) return { title: "Item não encontrado" }
-  return {
-    title: `${result.item.name} — ${result.restaurant.name}`,
-    description: result.item.description ?? undefined,
-    openGraph: {
-      images: result.item.image_url ? [result.item.image_url] : [],
-    },
-  }
-}
-
-export default async function ItemDetailPage({ params }: Props) {
-  const result = await getItem(params.slug, params.itemSlug)
-  if (!result) notFound()
-
-  const { item, restaurant } = result
-  const isSoldOut = !item.is_active
+  const theme = params.designName
+  const themeName = THEME_NAMES[theme] ?? theme
   const accent = restaurant.accent_color ?? "#C8622A"
-  const theme = restaurant.theme ?? "modern"
-  const backHref = `/${params.slug}`
+  const isSoldOut = !item.is_active
+  const backHref = `/design/${theme}`
+
+  const previewBanner = (
+    <div className="sticky top-0 z-50 flex items-center justify-between gap-3 px-4 py-3 bg-[#1A1510] border-b border-white/10 shadow-lg">
+      <Link href={backHref} className="flex items-center gap-2 text-white/60 hover:text-white transition-colors font-dm-sans text-sm">
+        <ArrowLeft className="w-4 h-4" />
+        Voltar
+      </Link>
+      <span className="font-dm-sans text-sm text-white/80">
+        Pré-visualização · <span className="text-white font-semibold">{themeName}</span>
+      </span>
+      <Link
+        href={`/dashboard/design?apply=${theme}`}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-dm-sans text-sm font-semibold text-white transition-colors"
+        style={{ background: accent }}
+      >
+        <Sparkles className="w-3.5 h-3.5" />
+        Usar este design
+      </Link>
+    </div>
+  )
 
   return (
     <div style={{ "--accent": accent } as React.CSSProperties}>
+      {previewBanner}
 
       {/* ── CLÁSSICO ── */}
       {theme === "classic" && (
@@ -246,6 +255,7 @@ export default async function ItemDetailPage({ params }: Props) {
           </div>
           <main className="flex-1 max-w-2xl mx-auto w-full px-5 pb-8">
             <div className="rounded-2xl bg-white overflow-hidden border border-[#EEEAE3] shadow-md">
+              {/* Image area */}
               <div className="relative h-72 bg-[#F0EDE6]">
                 {item.image_url ? (
                   <>
@@ -268,6 +278,7 @@ export default async function ItemDetailPage({ params }: Props) {
                   </div>
                 )}
               </div>
+              {/* Info */}
               <div className="p-5 flex flex-col gap-4">
                 {item.description && (
                   <>
@@ -290,14 +301,14 @@ export default async function ItemDetailPage({ params }: Props) {
       )}
 
       {/* ── MODERNO (default) ── */}
-      {(theme === "modern" || !["classic", "brasserie", "noite", "vibrante"].includes(theme)) && (
-        <div className="min-h-dvh bg-white flex flex-col">
+      {theme === "modern" && (
+        <div className="h-dvh bg-white flex flex-col">
           <MenuHeader restaurant={restaurant} />
           <div className="max-w-lg mx-auto w-full px-5 pt-4 pb-2 flex items-center justify-between">
-            <Link href={backHref} aria-label="Voltar" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors active:scale-95">
+            <Link href={backHref} className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors active:scale-95">
               <ArrowLeft className="w-5 h-5 text-gray-700" strokeWidth={1.75} />
             </Link>
-            <Link href={backHref} aria-label="Fechar" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors active:scale-95">
+            <Link href={backHref} className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors active:scale-95">
               <X className="w-5 h-5 text-gray-700" strokeWidth={1.75} />
             </Link>
           </div>
@@ -324,14 +335,14 @@ export default async function ItemDetailPage({ params }: Props) {
                 <div className="flex-1">
                   {item.description && (
                     <div>
-                      <h3 className="font-outfit font-bold text-white text-[16px] mb-2 drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]">Sobre</h3>
-                      <p className="font-outfit text-[15px] text-white leading-relaxed drop-shadow-[0_1px_3px_rgba(0,0,0,0.25)]">{item.description}</p>
+                      <h3 className="font-outfit font-bold text-white text-[16px] mb-2">Sobre</h3>
+                      <p className="font-outfit text-[15px] text-white leading-relaxed">{item.description}</p>
                     </div>
                   )}
                 </div>
                 <div className="h-px bg-white/25 mt-6 mb-6" />
                 <div className="flex items-center justify-between">
-                  <p className={`font-outfit font-bold text-[30px] leading-none drop-shadow-[0_1px_4px_rgba(0,0,0,0.3)] ${isSoldOut ? "line-through text-white/40" : "text-white"}`}>
+                  <p className={`font-outfit font-bold text-[30px] leading-none ${isSoldOut ? "line-through text-white/40" : "text-white"}`}>
                     {formatPrice(item.price)}
                   </p>
                   <span className={`px-4 py-1.5 rounded-full font-outfit font-semibold text-[13px] ${isSoldOut ? "bg-black/20 text-white/50" : "bg-black/20 text-white"}`}>
@@ -341,14 +352,6 @@ export default async function ItemDetailPage({ params }: Props) {
               </div>
             </div>
           </main>
-          <footer className="py-3 text-center">
-            <p className="font-outfit text-xs text-gray-400">
-              Powered by{" "}
-              <a href="/" className="hover:opacity-80 transition-opacity" style={{ color: accent }}>
-                Cardápios Digitais
-              </a>
-            </p>
-          </footer>
         </div>
       )}
     </div>

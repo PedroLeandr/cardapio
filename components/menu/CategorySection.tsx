@@ -7,9 +7,11 @@ import { getCategoryIcon } from "@/lib/category-icons"
 interface CategorySectionProps {
   category: Category & { items: Item[] }
   slug: string
+  linkBase?: string
 }
 
-export function CategorySection({ category, slug }: CategorySectionProps) {
+export function CategorySection({ category, slug, linkBase }: CategorySectionProps) {
+  const base = linkBase ?? `/${slug}`
   const hasItems = category.items.length > 0
   const Icon = getCategoryIcon(category.name)
 
@@ -20,7 +22,7 @@ export function CategorySection({ category, slug }: CategorySectionProps) {
         <h2 className="font-outfit font-bold text-gray-900 text-[17px]">
           {category.name}
         </h2>
-        <Icon className="w-4 h-4 text-[#C8622A]" />
+        <Icon className="w-4 h-4" style={{ color: "var(--accent)" }} />
       </div>
 
       {hasItems ? (
@@ -35,7 +37,7 @@ export function CategorySection({ category, slug }: CategorySectionProps) {
           {category.items.map((item, idx) => (
             <Link
               key={item.id}
-              href={`/${slug}/${generateSlug(item.name)}`}
+              href={`${base}/${generateSlug(item.name)}`}
               className="block flex-shrink-0 snap-center snap-always"
             >
               <ItemCard item={item} index={idx} />

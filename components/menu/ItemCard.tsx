@@ -50,8 +50,8 @@ export function ItemCard({ item }: ItemCardProps) {
         }`}
         style={{
           background: isSoldOut
-            ? "linear-gradient(155deg, #9A6040 0%, #3D2010 100%)"
-            : "linear-gradient(155deg, #D4703A 0%, #6B2A0A 100%)",
+            ? "linear-gradient(155deg, color-mix(in srgb, var(--accent) 60%, gray) 0%, color-mix(in srgb, var(--accent) 30%, black) 100%)"
+            : "linear-gradient(155deg, color-mix(in srgb, var(--accent) 90%, white) 0%, color-mix(in srgb, var(--accent) 55%, black) 100%)",
         }}
       >
         {/* Background texture */}
@@ -107,7 +107,7 @@ export function ItemCard({ item }: ItemCardProps) {
               aria-label="Ver detalhes"
               className={`w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-[0_4px_14px_rgba(0,0,0,0.18)] hover:scale-105 active:scale-95 transition-transform ${isSoldOut ? "opacity-40" : ""}`}
             >
-              <ChevronRight className="w-5 h-5 text-[#C8622A]" />
+              <ChevronRight className="w-5 h-5" style={{ color: "var(--accent)" }} />
             </button>
           </div>
         </div>

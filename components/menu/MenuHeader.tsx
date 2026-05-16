@@ -32,8 +32,8 @@ export function MenuHeader({ restaurant }: MenuHeaderProps) {
                 />
               </div>
             ) : (
-              <div className="w-10 h-10 rounded-full bg-[#C8622A]/10 ring-2 ring-[#C8622A]/15 flex items-center justify-center">
-                <span className="font-outfit font-bold text-[#C8622A] text-sm leading-none">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "color-mix(in srgb, var(--accent) 12%, white)", outline: "2px solid color-mix(in srgb, var(--accent) 20%, transparent)" }}>
+                <span className="font-outfit font-bold text-sm leading-none" style={{ color: "var(--accent)" }}>
                   {restaurant.name.charAt(0).toUpperCase()}
                 </span>
               </div>

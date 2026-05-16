@@ -64,7 +64,7 @@ function SortableCategory({
       </div>
       <div className="flex-1 min-w-0">
         <p className="font-dm-sans font-medium text-[#1A1510] truncate">{cat.name}</p>
-        <p className="font-dm-sans text-xs text-[#A89880]">Posição #{idx + 1}</p>
+        <p className="font-dm-sans text-xs text-[#A89880]">{(cat as any).items?.[0]?.count ?? 0} itens</p>
       </div>
 
       <div className="flex items-center gap-1">
@@ -107,7 +107,7 @@ export default function CategoriesPage() {
 
     const { data } = await supabase
       .from("categories")
-      .select("*")
+      .select("*, items(count)")
       .eq("restaurant_id", restaurant.id)
       .order("position")
 

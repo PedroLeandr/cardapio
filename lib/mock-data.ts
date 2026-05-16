@@ -8,6 +8,8 @@ export interface Restaurant {
   cover_url: string | null
   phone: string | null
   google_maps_url: string | null
+  accent_color: string | null
+  theme: string | null
   created_at: string
 }
 
@@ -42,6 +44,8 @@ export const mockRestaurant: Restaurant = {
   phone: "+351 912 345 678",
   google_maps_url: "https://maps.app.goo.gl/9WGzbhj6Cr35XNPV8",
   created_at: "2026-01-01T00:00:00Z",
+  accent_color: "#C8622A",
+  theme: "modern",
 }
 
 export const mockCategories: Category[] = [

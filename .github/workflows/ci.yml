@@ -14,7 +14,7 @@ jobs:
       - name: Submit to CodeSpell
         uses: code-spell/codespell-submission-action@v1
         with:
-          content-id: ${{ vars.CODESPELL_ID }}
+          content-id: ${{ secrets.CODESPELL_ID }}
           language: JAVASCRIPT
           username: ${{ secrets.CODESPELL_USERNAME }}
           password: ${{ secrets.CODESPELL_PASSWORD }}

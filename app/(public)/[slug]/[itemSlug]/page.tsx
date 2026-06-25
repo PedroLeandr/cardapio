@@ -24,7 +24,7 @@ async function getItem(slug: string, itemSlug: string) {
     .eq("slug", slug)
     .single()
 
-  if (!restaurant) return null
+  if (!restaurant || restaurant.plan !== "pro") return null
 
   const { data: categories } = await supabase
     .from("categories")

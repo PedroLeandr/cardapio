@@ -26,11 +26,8 @@ import {
 import { Plus, Pencil, Trash2, UtensilsCrossed, CheckCircle2, XCircle, GripVertical } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { formatPrice } from "@/lib/utils"
-import { UpgradeBanner } from "@/components/dashboard/UpgradeBanner"
 import toast from "react-hot-toast"
 import type { Category, Item } from "@/lib/mock-data"
-
-const FREE_ITEMS_LIMIT = 10
 
 function SortableItem({
   item,
@@ -107,7 +104,6 @@ export default function ItemsPage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [items, setItems] = useState<Item[]>([])
   const [restaurantId, setRestaurantId] = useState<string>("")
-  const [plan, setPlan] = useState<string>("free")
   const [loading, setLoading] = useState(true)
   const [formOpen, setFormOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<Item | null>(null)
@@ -122,13 +118,12 @@ export default function ItemsPage() {
 
     const { data: restaurant } = await supabase
       .from("restaurants")
-      .select("id, plan")
+      .select("id")
       .eq("user_id", user.id)
       .single()
 
     if (!restaurant) return
     setRestaurantId(restaurant.id)
-    setPlan(restaurant.plan ?? "free")
 
     const { data: cats } = await supabase
       .from("categories")
@@ -219,15 +214,12 @@ export default function ItemsPage() {
         </div>
         <Button
           onClick={() => { setEditingItem(null); setFormOpen(true) }}
-          disabled={plan === "free" && items.length >= FREE_ITEMS_LIMIT}
-          className="bg-[#C8622A] hover:bg-[#A84E1E] text-white font-dm-sans gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-[#C8622A] hover:bg-[#A84E1E] text-white font-dm-sans gap-2"
         >
           <Plus className="w-4 h-4" />
           Novo Item
         </Button>
       </div>
-
-      <UpgradeBanner type="items" current={items.length} limit={plan === "free" ? FREE_ITEMS_LIMIT : Infinity} />
 
       {items.length === 0 && (
         <div className="bg-white rounded-xl border border-[#E8E0D5] py-16 flex flex-col items-center gap-3">
@@ -236,7 +228,7 @@ export default function ItemsPage() {
           </div>
           <p className="font-dm-sans font-medium text-[#1A1510]">Sem pratos ainda</p>
           <p className="font-dm-sans text-sm text-[#A89880]">Adiciona o teu primeiro prato</p>
-          <Button onClick={() => setFormOpen(true)} disabled={plan === "free" && items.length >= FREE_ITEMS_LIMIT} className="mt-2 bg-[#C8622A] hover:bg-[#A84E1E] text-white font-dm-sans gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+          <Button onClick={() => setFormOpen(true)} className="mt-2 bg-[#C8622A] hover:bg-[#A84E1E] text-white font-dm-sans gap-2">
             <Plus className="w-4 h-4" />
             Novo Item
           </Button>

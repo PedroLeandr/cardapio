@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation"
 import type { Metadata } from "next"
+import { UtensilsCrossed } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { MenuHeader } from "@/components/menu/MenuHeader"
 import { MenuClient } from "@/components/menu/MenuClient"
@@ -27,6 +28,8 @@ async function getMenuData(slug: string): Promise<MenuData | null> {
     .single()
 
   if (!restaurant) return null
+
+  if (restaurant.plan !== "pro") return { restaurant, categories: [] }
 
   const { data: categories } = await supabase
     .from("categories")
@@ -71,6 +74,21 @@ export default async function MenuPage({ params }: Props) {
   if (!data) notFound()
 
   const { restaurant, categories } = data
+
+  if (restaurant.plan !== "pro") {
+    return (
+      <div className="min-h-dvh flex flex-col items-center justify-center bg-white px-6 text-center">
+        <div className="w-16 h-16 rounded-full bg-[#F5E6DC] flex items-center justify-center mb-5">
+          <UtensilsCrossed className="w-8 h-8 text-[#C8622A]" />
+        </div>
+        <h1 className="font-playfair text-2xl font-bold text-[#1A1510] mb-2">{restaurant.name}</h1>
+        <p className="font-dm-sans text-sm text-[#A89880] max-w-xs">
+          Este cardápio ainda não está disponível online.
+        </p>
+      </div>
+    )
+  }
+
   const activeCategoriesWithItems = categories.filter((cat) => cat.items.length > 0)
   const accent = restaurant.accent_color ?? "#C8622A"
   const theme = restaurant.theme ?? "modern"

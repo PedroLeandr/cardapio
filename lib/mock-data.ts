@@ -10,6 +10,7 @@ export interface Restaurant {
   google_maps_url: string | null
   accent_color: string | null
   theme: string | null
+  plan?: string
   created_at: string
 }
 

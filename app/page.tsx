@@ -1,6 +1,6 @@
 import Image from "next/image"
 import Link from "next/link"
-import { QrCode, Smartphone, Zap, ArrowRight, Check, X } from "lucide-react"
+import { QrCode, Smartphone, Zap, ArrowRight, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const features = [
@@ -28,7 +28,7 @@ const steps = [
   {
     number: "01",
     title: "Cria a tua conta",
-    description: "Cria a tua conta em menos de um minuto. Sem cartão de crédito.",
+    description: "Cria a tua conta em menos de um minuto e subscreve o plano Pro.",
   },
   {
     number: "02",
@@ -40,15 +40,6 @@ const steps = [
     title: "Partilha com os clientes",
     description: "Faz download do QR code, imprime e coloca nas mesas. É mesmo assim.",
   },
-]
-
-const freeFeatures = [
-  { text: "Até 3 categorias", included: true },
-  { text: "Até 10 itens no menu", included: true },
-  { text: "QR code para download", included: true },
-  { text: "Link público do cardápio", included: true },
-  { text: "Categorias ilimitadas", included: false },
-  { text: "Itens ilimitados", included: false },
 ]
 
 const proFeatures = [
@@ -90,7 +81,7 @@ export default function LandingPage() {
           </Link>
           <Link href="/register">
             <Button className="bg-[#C8622A] hover:bg-[#A84E1E] text-white font-dm-sans text-sm">
-              Começar grátis
+              Criar conta
             </Button>
           </Link>
         </div>
@@ -101,7 +92,7 @@ export default function LandingPage() {
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#F5E6DC] border border-[#E8D5C8] mb-8">
           <span className="w-1.5 h-1.5 rounded-full bg-[#C8622A]" />
           <span className="font-dm-sans text-xs font-medium text-[#C8622A]">
-            Plano gratuito disponível, sem cartão de crédito
+            Cardápio digital profissional por €14,99/mês
           </span>
         </div>
 
@@ -248,62 +239,14 @@ export default function LandingPage() {
       <section className="max-w-5xl mx-auto px-6 py-20">
         <div className="text-center mb-14">
           <h2 className="font-playfair text-3xl font-bold text-[#1A1510] mb-3">
-            Começa grátis. Cresce quando precisares.
+            Um plano. Tudo incluído.
           </h2>
-          <p className="font-lato text-[#6B5E4E]">Sem compromisso, sem letras pequenas.</p>
+          <p className="font-lato text-[#6B5E4E]">Sem surpresas, sem limitações.</p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-          {/* Free */}
-          <div className="bg-white rounded-2xl border border-[#E8E0D5] p-8 flex flex-col">
-            <div className="mb-7">
-              <p className="font-dm-sans text-xs font-semibold text-[#6B5E4E] uppercase tracking-widest mb-2">
-                Free
-              </p>
-              <div className="flex items-baseline gap-1.5 mb-2">
-                <span className="font-playfair text-4xl font-bold text-[#1A1510]">€0</span>
-                <span className="font-dm-sans text-sm text-[#A89880]">para sempre</span>
-              </div>
-              <p className="font-dm-sans text-sm text-[#6B5E4E]">Para começar sem risco</p>
-            </div>
-
-            <ul className="space-y-3.5 mb-8 flex-1">
-              {freeFeatures.map(({ text, included }) => (
-                <li key={text} className="flex items-center gap-3">
-                  {included ? (
-                    <Check className="w-4 h-4 text-[#C8622A] flex-shrink-0" />
-                  ) : (
-                    <X className="w-4 h-4 text-[#D8CBBF] flex-shrink-0" />
-                  )}
-                  <span
-                    className={`font-dm-sans text-sm ${
-                      included ? "text-[#1A1510]" : "text-[#B8ADA0]"
-                    }`}
-                  >
-                    {text}
-                  </span>
-                </li>
-              ))}
-            </ul>
-
-            <Link href="/register" className="block">
-              <Button
-                variant="outline"
-                className="w-full border-[#E8E0D5] text-[#1A1510] hover:bg-[#F2EFE9] font-dm-sans"
-              >
-                Criar conta grátis
-              </Button>
-            </Link>
-          </div>
-
+        <div className="max-w-sm mx-auto">
           {/* Pro */}
           <div className="bg-white rounded-2xl border-2 border-[#C8622A] p-8 flex flex-col relative shadow-lg shadow-[#C8622A]/10">
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-              <span className="bg-[#C8622A] text-white font-dm-sans text-xs font-semibold px-4 py-1.5 rounded-full shadow-sm">
-                Mais popular
-              </span>
-            </div>
-
             <div className="mb-7">
               <p className="font-dm-sans text-xs font-semibold text-[#C8622A] uppercase tracking-widest mb-2">
                 Pro
@@ -326,7 +269,7 @@ export default function LandingPage() {
 
             <Link href="/register" className="block">
               <Button className="w-full bg-[#C8622A] hover:bg-[#A84E1E] text-white font-dm-sans gap-2">
-                Começar com Pro
+                Começar agora
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
@@ -341,7 +284,7 @@ export default function LandingPage() {
             Pronto para modernizar o teu cardápio?
           </h2>
           <p className="font-lato text-[#A89880] mb-8">
-            Junta-te a restaurantes que já usam a plataforma. Começa hoje, grátis.
+            Junta-te a restaurantes que já usam a plataforma. Começa hoje.
           </p>
           <Link href="/register">
             <Button className="bg-[#C8622A] hover:bg-[#A84E1E] text-white font-dm-sans font-medium px-8 py-3 text-base gap-2">

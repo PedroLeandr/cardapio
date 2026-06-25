@@ -462,8 +462,8 @@ export default function SettingsPage() {
         ) : (
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="font-dm-sans font-semibold text-sm text-[#1A1510]">Plano Gratuito</p>
-              <p className="font-dm-sans text-xs text-[#A89880]">Máx. 3 categorias · Máx. 10 itens</p>
+              <p className="font-dm-sans font-semibold text-sm text-[#1A1510]">Sem subscrição ativa</p>
+              <p className="font-dm-sans text-xs text-[#A89880]">Subscreve o Plano Pro para aceder a todas as funcionalidades</p>
             </div>
             <button
               onClick={handleUpgrade}
@@ -471,7 +471,7 @@ export default function SettingsPage() {
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 disabled:opacity-60 text-white text-xs font-dm-sans font-semibold transition-colors"
             >
               <Sparkles className="w-3.5 h-3.5" />
-              {checkoutLoading ? "A redirecionar..." : "Upgrade para Pro"}
+              {checkoutLoading ? "A redirecionar..." : "Subscrever Pro"}
             </button>
           </div>
         )}

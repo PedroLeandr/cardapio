@@ -34,6 +34,31 @@ export interface Item {
   created_at: string
 }
 
+export interface Table {
+  id: string
+  restaurant_id: string
+  name: string
+  created_at: string
+}
+
+export interface CartSession {
+  id: string
+  table_id: string
+  status: "open" | "closed"
+  created_at: string
+  updated_at: string
+}
+
+export interface CartItem {
+  id: string
+  cart_session_id: string
+  item_id: string
+  item_name: string
+  item_price: number
+  quantity: number
+  created_at: string
+}
+
 export const mockRestaurant: Restaurant = {
   id: "mock-restaurant-1",
   user_id: "mock-user-1",

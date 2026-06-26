@@ -111,6 +111,63 @@ CREATE POLICY "Dono pode gerir itens do seu restaurante"
     )
   );
 
+-- ─── MESAS ───────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS tables (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  restaurant_id uuid NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+  name          text NOT NULL,
+  created_at    timestamptz DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_tables_restaurant_id ON tables(restaurant_id);
+
+ALTER TABLE tables ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Leitura pública de mesas"
+  ON tables FOR SELECT USING (true);
+
+CREATE POLICY "Dono pode gerir as suas mesas"
+  ON tables FOR ALL
+  USING (restaurant_id IN (SELECT id FROM restaurants WHERE user_id = auth.uid()))
+  WITH CHECK (restaurant_id IN (SELECT id FROM restaurants WHERE user_id = auth.uid()));
+
+-- ─── CART SESSIONS ───────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS cart_sessions (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  table_id   uuid NOT NULL REFERENCES tables(id) ON DELETE CASCADE,
+  status     text NOT NULL DEFAULT 'open',
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_cart_sessions_table_id ON cart_sessions(table_id);
+
+ALTER TABLE cart_sessions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Acesso público a cart_sessions"
+  ON cart_sessions FOR ALL USING (true) WITH CHECK (true);
+
+-- ─── CART ITEMS ──────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS cart_items (
+  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  cart_session_id uuid NOT NULL REFERENCES cart_sessions(id) ON DELETE CASCADE,
+  item_id         uuid NOT NULL REFERENCES items(id) ON DELETE CASCADE,
+  item_name       text NOT NULL,
+  item_price      numeric(10,2) NOT NULL,
+  quantity        integer NOT NULL DEFAULT 1,
+  created_at      timestamptz DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_cart_items_session_id ON cart_items(cart_session_id);
+
+ALTER TABLE cart_items ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Acesso público a cart_items"
+  ON cart_items FOR ALL USING (true) WITH CHECK (true);
+
 -- ─── STORAGE ─────────────────────────────────────────────────
 
 -- Cria o bucket para imagens dos itens (faz isto manualmente no dashboard

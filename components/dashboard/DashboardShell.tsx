@@ -13,6 +13,7 @@ import {
   X,
   Palette,
   Crown,
+  QrCode,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
@@ -23,6 +24,7 @@ const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/categories", label: "Categorias", icon: FolderOpen },
   { href: "/dashboard/items", label: "Itens", icon: UtensilsCrossed },
+  { href: "/dashboard/mesas", label: "Mesas", icon: QrCode },
   { href: "/dashboard/design", label: "Design", icon: Palette },
   { href: "/dashboard/settings", label: "Configurações", icon: Settings },
 ]

@@ -92,7 +92,7 @@ export default function LandingPage() {
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#F5E6DC] border border-[#E8D5C8] mb-8">
           <span className="w-1.5 h-1.5 rounded-full bg-[#C8622A]" />
           <span className="font-dm-sans text-xs font-medium text-[#C8622A]">
-            Cardápio digital profissional por €14,99/mês
+            Cardápio digital profissional por €30/mês
           </span>
         </div>
 
@@ -252,7 +252,7 @@ export default function LandingPage() {
                 Pro
               </p>
               <div className="flex items-baseline gap-1.5 mb-2">
-                <span className="font-playfair text-4xl font-bold text-[#1A1510]">€14,99</span>
+                <span className="font-playfair text-4xl font-bold text-[#1A1510]">€30</span>
                 <span className="font-dm-sans text-sm text-[#A89880]">/ mês</span>
               </div>
               <p className="font-dm-sans text-sm text-[#6B5E4E]">Para restaurantes a crescer</p>

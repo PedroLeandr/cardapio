@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Cardápios Digitais
 
-## Getting Started
+Plataforma SaaS para restaurantes criarem e partilharem o seu cardápio digital via QR code ou link. Desenvolvido em Portugal.
 
-First, run the development server:
+## O que faz
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Restaurante cria conta, configura o cardápio (categorias + pratos) e gera um QR code
+- Clientes acedem ao cardápio pelo telemóvel, sem instalar nada
+- O cardápio público só fica online após subscrição do Plano Pro (€30/mês via Stripe)
+- Múltiplos temas visuais disponíveis (Modern, Classic, Brasserie, Noite, Vibrante)
+
+## Stack
+
+| Camada | Tecnologia |
+|---|---|
+| Framework | Next.js 14 (App Router) |
+| Base de dados | Supabase (PostgreSQL + Auth + Storage) |
+| Pagamentos | Stripe (subscriptions) |
+| Styling | Tailwind CSS + shadcn/ui |
+| Forms | React Hook Form + Zod |
+| Drag & Drop | dnd-kit |
+| Deploy | Vercel |
+
+## Estrutura
+
+```
+app/
+├── (auth)/          # Login, Registo, Confirmação de email
+├── (public)/        # Cardápio público: /[slug] e /[slug]/[item]
+├── dashboard/       # Dashboard do restaurante (categorias, itens, definições, design)
+├── api/
+│   ├── stripe/      # checkout, portal, webhook
+│   ├── create-restaurant/
+│   ├── send-confirmation/
+│   └── verify-confirmation/
+lib/
+├── supabase/        # Clients (server, client, admin)
+├── stripe.ts
+└── utils.ts
+components/
+├── dashboard/       # Componentes do dashboard
+└── menu/            # Temas do cardápio público
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Variáveis de ambiente
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+STRIPE_PRICE_ID=
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+NEXT_PUBLIC_SITE_URL=
+EMAIL_FROM=
+EMAIL_HOST=
+EMAIL_PORT=
+EMAIL_USER=
+EMAIL_PASS=
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Correr localmente
 
-## Learn More
+```bash
+npm install
+npm run dev
+# http://localhost:3333
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Base de dados
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+O schema SQL está em `supabase/schema.sql`. Correr no Supabase SQL Editor antes de usar a aplicação.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Fluxo de pagamento
 
-## Deploy on Vercel
+1. Utilizador cria conta e restaurante (grátis)
+2. Cardápio público mostra "não disponível" enquanto não houver subscrição ativa
+3. Utilizador subscreve Pro via Stripe Checkout
+4. Webhook do Stripe atualiza `restaurants.plan = "pro"`
+5. Cardápio fica público automaticamente
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Se a subscrição for cancelada, `plan` volta a `"free"` e o cardápio fica offline.

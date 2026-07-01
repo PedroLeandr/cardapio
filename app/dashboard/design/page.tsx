@@ -6,6 +6,7 @@ import Link from "next/link"
 import { DashboardShell } from "@/components/dashboard/DashboardShell"
 import { Crown, Sparkles, Check, ChevronRight } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import { fetchActiveRestaurant } from "@/lib/restaurants/client"
 import toast from "react-hot-toast"
 
 const THEMES = [
@@ -205,11 +206,7 @@ export default function DesignPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      const { data: restaurant } = await supabase
-        .from("restaurants")
-        .select("id, plan, theme, accent_color")
-        .eq("user_id", user.id)
-        .single()
+      const { restaurant } = await fetchActiveRestaurant(supabase, user.id, "id, plan, theme, accent_color")
 
       if (!restaurant) return
       setRestaurantId(restaurant.id)

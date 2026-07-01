@@ -27,7 +27,7 @@ function httpsRequest(
   })
 }
 
-export async function deleteAccount(userId: string, restaurantId: string) {
+export async function deleteAccount(userId: string, restaurantId: string, deleteUser = true) {
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -79,17 +79,19 @@ export async function deleteAccount(userId: string, restaurantId: string) {
       headers
     )
 
-    // 4. Eliminar utilizador (Supabase Auth Admin API)
-    const delUser = await httpsRequest(
-      "DELETE",
-      `${supabaseUrl}/auth/v1/admin/users/${userId}`,
-      null,
-      headers
-    )
+    // 4. Eliminar utilizador (Supabase Auth Admin API) — apenas se não restarem outros restaurantes
+    if (deleteUser) {
+      const delUser = await httpsRequest(
+        "DELETE",
+        `${supabaseUrl}/auth/v1/admin/users/${userId}`,
+        null,
+        headers
+      )
 
-    if (delUser.status !== 200 && delUser.status !== 204) {
-      console.error("deleteAccount user error:", delUser.status, delUser.body)
-      return { error: "Erro ao eliminar conta de utilizador." }
+      if (delUser.status !== 200 && delUser.status !== 204) {
+        console.error("deleteAccount user error:", delUser.status, delUser.body)
+        return { error: "Erro ao eliminar conta de utilizador." }
+      }
     }
 
     return { error: null }

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { stripe } from "@/lib/stripe"
+import { fetchActiveRestaurant } from "@/lib/restaurants/server"
 import { DashboardShell } from "@/components/dashboard/DashboardShell"
 import { QRCodeDisplay } from "@/components/dashboard/QRCodeDisplay"
 import { FolderOpen, UtensilsCrossed, ExternalLink } from "lucide-react"
@@ -16,11 +17,7 @@ export default async function DashboardPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect("/login")
 
-  const { data: restaurant } = await supabase
-    .from("restaurants")
-    .select("*")
-    .eq("user_id", user.id)
-    .single()
+  const { restaurant } = await fetchActiveRestaurant(supabase, user.id)
 
   // Verificar upgrade após pagamento Stripe.
   // O webhook não alcança servidores locais, então verificamos aqui diretamente.

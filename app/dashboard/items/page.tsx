@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dialog"
 import { Plus, Pencil, Trash2, UtensilsCrossed, CheckCircle2, XCircle, GripVertical } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import { fetchActiveRestaurant } from "@/lib/restaurants/client"
 import { formatPrice } from "@/lib/utils"
 import { UpgradeBanner } from "@/components/dashboard/UpgradeBanner"
 import toast from "react-hot-toast"
@@ -120,11 +121,7 @@ export default function ItemsPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    const { data: restaurant } = await supabase
-      .from("restaurants")
-      .select("id, plan")
-      .eq("user_id", user.id)
-      .single()
+    const { restaurant } = await fetchActiveRestaurant(supabase, user.id, "id, plan")
 
     if (!restaurant) return
     setRestaurantId(restaurant.id)

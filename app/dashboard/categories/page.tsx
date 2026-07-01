@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dialog"
 import { Plus, Pencil, Trash2, FolderOpen, GripVertical } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import { fetchActiveRestaurant } from "@/lib/restaurants/client"
 import { UpgradeBanner } from "@/components/dashboard/UpgradeBanner"
 import toast from "react-hot-toast"
 import type { Category } from "@/lib/mock-data"
@@ -95,11 +96,7 @@ export default function CategoriesPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    const { data: restaurant } = await supabase
-      .from("restaurants")
-      .select("id, plan")
-      .eq("user_id", user.id)
-      .single()
+    const { restaurant } = await fetchActiveRestaurant(supabase, user.id, "id, plan")
 
     if (!restaurant) return
     setRestaurantId(restaurant.id)

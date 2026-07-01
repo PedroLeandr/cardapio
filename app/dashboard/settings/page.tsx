@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog"
 import { DashboardShell } from "@/components/dashboard/DashboardShell"
 import { createClient } from "@/lib/supabase/client"
+import { fetchActiveRestaurant } from "@/lib/restaurants/client"
 import { generateSlug } from "@/lib/utils"
 import { deleteAccount } from "./actions"
 import toast from "react-hot-toast"
@@ -55,6 +56,7 @@ export default function SettingsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState("")
   const [deleting, setDeleting] = useState(false)
   const [currentSlug, setCurrentSlug] = useState("")
+  const [otherRestaurantsCount, setOtherRestaurantsCount] = useState(0)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const slugTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -78,13 +80,10 @@ export default function SettingsPage() {
       setUserId(user.id)
       setUserEmail(user.email ?? "")
 
-      const { data: restaurant } = await supabase
-        .from("restaurants")
-        .select("*")
-        .eq("user_id", user.id)
-        .single()
+      const { restaurant, restaurants } = await fetchActiveRestaurant(supabase, user.id)
 
       if (!restaurant) return
+      setOtherRestaurantsCount(restaurants.length - 1)
       setRestaurantId(restaurant.id)
       setPlan(restaurant.plan ?? "free")
       setCurrentSlug(restaurant.slug)
@@ -219,14 +218,21 @@ export default function SettingsPage() {
   const handleDelete = async () => {
     if (deleteConfirm !== currentSlug) return
     setDeleting(true)
-    const result = await deleteAccount(userId, restaurantId)
+    const isLastRestaurant = otherRestaurantsCount === 0
+    const result = await deleteAccount(userId, restaurantId, isLastRestaurant)
     if (result.error) {
       toast.error(result.error)
       setDeleting(false)
       return
     }
-    toast.success("Conta eliminada.")
-    window.location.href = "/"
+    if (isLastRestaurant) {
+      toast.success("Conta eliminada.")
+      window.location.href = "/"
+    } else {
+      toast.success("Restaurante eliminado.")
+      document.cookie = "active_restaurant_id=; path=/; max-age=0"
+      window.location.href = "/dashboard"
+    }
   }
 
   if (loading) {
@@ -502,13 +508,15 @@ export default function SettingsPage() {
           Zona de Perigo
         </h2>
         <p className="font-dm-sans text-sm text-[#6B5E4E] mb-4">
-          Elimina permanentemente o teu restaurante, todos os pratos e categorias, e a tua conta. Esta ação é irreversível.
+          {otherRestaurantsCount > 0
+            ? "Elimina permanentemente este restaurante, todos os pratos e categorias. A tua conta e os teus outros restaurantes não são afetados. Esta ação é irreversível."
+            : "Elimina permanentemente o teu restaurante, todos os pratos e categorias, e a tua conta. Esta ação é irreversível."}
         </p>
         <button
           onClick={() => setDeleteOpen(true)}
           className="px-4 py-2 text-sm font-dm-sans font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
         >
-          Eliminar restaurante e conta
+          {otherRestaurantsCount > 0 ? "Eliminar este restaurante" : "Eliminar restaurante e conta"}
         </button>
       </div>
 

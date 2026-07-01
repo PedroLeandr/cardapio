@@ -13,9 +13,14 @@ import {
   X,
   Palette,
   Crown,
+  ChevronsUpDown,
+  Plus,
+  Check,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
+import { fetchActiveRestaurant, setActiveRestaurantId } from "@/lib/restaurants/client"
+import { canManageMultipleRestaurants } from "@/lib/restaurantAccess"
 import toast from "react-hot-toast"
 import { PageLoader } from "./PageLoader"
 
@@ -31,23 +36,41 @@ interface DashboardShellProps {
   children: React.ReactNode
 }
 
+interface RestaurantOption {
+  id: string
+  name: string
+}
+
 export function DashboardShell({ children }: DashboardShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [plan, setPlan] = useState<"free" | "pro" | null>(null)
+  const [restaurants, setRestaurants] = useState<RestaurantOption[]>([])
+  const [activeRestaurantId, setActiveRestaurantIdState] = useState<string | null>(null)
+  const [canCreateMore, setCanCreateMore] = useState(false)
+  const [switcherOpen, setSwitcherOpen] = useState(false)
   const pathname = usePathname()
 
   useEffect(() => {
     const supabase = createClient()
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return
-      supabase
-        .from("restaurants")
-        .select("plan")
-        .eq("user_id", user.id)
-        .single()
-        .then(({ data }) => setPlan((data?.plan ?? "free") as "free" | "pro"))
+      setCanCreateMore(canManageMultipleRestaurants(user.email))
+      const { restaurant, restaurants: all } = await fetchActiveRestaurant(
+        supabase,
+        user.id,
+        "id, name, plan"
+      )
+      setPlan((restaurant?.plan ?? "free") as "free" | "pro")
+      setRestaurants(all.map((r) => ({ id: r.id, name: r.name })))
+      setActiveRestaurantIdState(restaurant?.id ?? null)
     })
   }, [])
+
+  const handleSwitchRestaurant = (id: string) => {
+    if (id === activeRestaurantId) { setSwitcherOpen(false); return }
+    setActiveRestaurantId(id)
+    window.location.href = "/dashboard"
+  }
 
   const handleLogout = async () => {
     const supabase = createClient()
@@ -86,6 +109,49 @@ export function DashboardShell({ children }: DashboardShellProps) {
           </span>
         </div>
       </div>
+
+      {/* Seletor de restaurante */}
+      {(canCreateMore || restaurants.length > 1) && (
+        <div className="px-3 pt-3 relative">
+          <button
+            onClick={() => setSwitcherOpen((v) => !v)}
+            className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-[#231A11] border border-[#2A1E14] text-left hover:bg-[#2E2318] transition-colors"
+          >
+            <span className="font-dm-sans text-xs font-medium text-[#E8DDD0] truncate">
+              {restaurants.find((r) => r.id === activeRestaurantId)?.name ?? "Restaurante"}
+            </span>
+            <ChevronsUpDown className="w-3.5 h-3.5 text-[#7A6A5A] flex-shrink-0" />
+          </button>
+
+          {switcherOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setSwitcherOpen(false)} />
+              <div className="absolute left-3 right-3 top-full mt-1 z-50 bg-[#231A11] border border-[#2A1E14] rounded-lg shadow-lg py-1 max-h-64 overflow-y-auto">
+                {restaurants.map((r) => (
+                  <button
+                    key={r.id}
+                    onClick={() => handleSwitchRestaurant(r.id)}
+                    className="w-full flex items-center justify-between gap-2 px-3 py-2 text-left font-dm-sans text-xs text-[#C8A882] hover:bg-[#2E2318] transition-colors"
+                  >
+                    <span className="truncate">{r.name}</span>
+                    {r.id === activeRestaurantId && <Check className="w-3.5 h-3.5 text-[#C8622A] flex-shrink-0" />}
+                  </button>
+                ))}
+                {canCreateMore && (
+                  <Link
+                    href="/dashboard/restaurants/new"
+                    onClick={() => { setSwitcherOpen(false); setSidebarOpen(false) }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-left font-dm-sans text-xs font-medium text-[#C8622A] hover:bg-[#2E2318] transition-colors border-t border-[#2A1E14] mt-1 pt-2"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Novo restaurante
+                  </Link>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      )}
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-0.5">
